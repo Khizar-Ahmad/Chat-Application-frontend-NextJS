@@ -1,27 +1,26 @@
+"use client";
 import { Footer } from "./../../components/footer";
 import HomeNavbar from "./../../components/HomeHeader";
 import { Hero } from "./../main-section-landing-page";
 import { useAppContext } from "./../../context-provider/context_Provider";
 import MainSection from "./main_section";
-export default function LandingPage(){
-        
-    return(
-    
-        <>
-          <header>
-            {/* <nav className=""></nav> */}
-            <HomeNavbar/>
+export default function LandingPage() {
+  return (
+    <>
+      <header>
+        {/* <nav className=""></nav> */}
+        <HomeNavbar />
       </header>
       <section className="h-[80vh]">
-         <article className="h-full">
-            {/* <div> This is the Home page</div> */}
+        <article className="h-full">
+          {/* <div> This is the Home page</div> */}
           {/* <Hero/> */}
-               <MainSection/>
-           </article>
+          <MainSection />
+        </article>
       </section>
       <footer>
-      <Footer/>
+        <Footer />
       </footer>
-        </>
-    );
+    </>
+  );
 }

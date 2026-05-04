@@ -1,3 +1,4 @@
+"use client";
 import { useAppContext } from "@/app/context-provider/context_Provider";
 
 const SideBar = () => {
@@ -109,7 +110,7 @@ const SideBar = () => {
                     </div>
                   </div>
                 </div>
-              )
+              ),
             )
           ) : (
             <></>

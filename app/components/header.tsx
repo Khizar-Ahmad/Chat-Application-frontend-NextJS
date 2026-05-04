@@ -1,26 +1,31 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useState } from "react"
-import { Button } from "../ui/button"
+import Link from "next/link";
+import { useState } from "react";
+import { Button } from "../ui/button";
 // import { Menu, X } from "lucide-react"
-import { motion } from "framer-motion"
+import { motion } from "framer-motion";
 
 // import Link from "next/link";
 // import { Button } from "@/components/ui/button";
 import { Menu, MessageCircle } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useAppContext } from "../context-provider/context_Provider"
+import { useAppContext } from "../context-provider/context_Provider";
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false)
-  const  {sigupModalFlag,setSigupModalFlag,loginModalFlag,setLoginModalFlag}= useAppContext();
+  const [open, setOpen] = useState(false);
+  const {
+    sigupModalFlag,
+    setSigupModalFlag,
+    loginModalFlag,
+    setLoginModalFlag,
+  } = useAppContext();
   const links = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
     { href: "/blog", label: "Blog" },
     { href: "/contact", label: "Contact" },
-  ]
+  ];
 
   return (
     // <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
@@ -77,7 +82,6 @@ export default function Navbar() {
     // </nav>
     <nav className="sticky top-0 z-50 w-full px-10 border-b bg-white/80 backdrop-blur-md pointer-events-auto">
       <div className="container flex h-16 items-center justify-between">
-        
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 font-bold text-lg">
           <MessageCircle className="h-6 w-6 text-blue-600" />
@@ -86,10 +90,16 @@ export default function Navbar() {
 
         {/* Links (desktop) */}
         <div className="hidden md:flex gap-6 text-sm font-medium">
-          <Link href="#features" className="hover:text-blue-600 transition-colors">
+          <Link
+            href="#features"
+            className="hover:text-blue-600 transition-colors"
+          >
             Features
           </Link>
-          <Link href="#pricing" className="hover:text-blue-600 transition-colors">
+          <Link
+            href="#pricing"
+            className="hover:text-blue-600 transition-colors"
+          >
             Pricing
           </Link>
           <Link href="#about" className="hover:text-blue-600 transition-colors">
@@ -99,15 +109,19 @@ export default function Navbar() {
 
         {/* Right side: Auth buttons */}
         <div className="hidden md:flex gap-3">
-          <Button onClick={()=>{
-                setLoginModalFlag(!loginModalFlag);
-              }}>
+          <Button
+            onClick={() => {
+              setLoginModalFlag(!loginModalFlag);
+            }}
+          >
             {/* <Link href="/login">Login</Link> */}
             Login
           </Button>
-          <Button onClick={()=>{
-                setSigupModalFlag(!sigupModalFlag);
-              }}>
+          <Button
+            onClick={() => {
+              setSigupModalFlag(!sigupModalFlag);
+            }}
+          >
             {/* <Link href="/signup">Sign Up</Link> */}
             Sign Up
           </Button>
@@ -126,9 +140,12 @@ export default function Navbar() {
               <Link href="#pricing">Pricing</Link>
               <Link href="#about">About</Link>
               <Link href="/login">Login</Link>
-              <Button className="mt-2" onClick={()=>{
-                setSigupModalFlag(!sigupModalFlag);
-              }}>
+              <Button
+                className="mt-2"
+                onClick={() => {
+                  setSigupModalFlag(!sigupModalFlag);
+                }}
+              >
                 {/* <Link href="/signup">Sign Up</Link> */}
                 Sign Up
               </Button>
@@ -137,5 +154,5 @@ export default function Navbar() {
         </Sheet>
       </div>
     </nav>
-  )
+  );
 }

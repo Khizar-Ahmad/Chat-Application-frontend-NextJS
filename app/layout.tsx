@@ -1,5 +1,6 @@
-import '@/app/ui/global.css';
+"use client";
 
+// import "@/app/ui/global.css";
 
 export default function RootLayout({
   children,
@@ -8,7 +9,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className='text-green-400'>{children}</body>
+      <body className="text-green-400">{children}</body>
     </html>
   );
 }

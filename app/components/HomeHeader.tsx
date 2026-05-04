@@ -44,7 +44,7 @@ export default function HomeNavbar() {
             <AvatarImage src="/avatars/user.png" alt="User" />
             <AvatarFallback>JD</AvatarFallback>
           </Avatar> */}
-          <Button size="sm" variant="outline" className="hidden md:flex gap-1" onClick={logOut}>
+          <Button   className="hidden md:flex gap-1" onClick={logOut}>
             <LogOut className="h-4 w-4" />
             Logout
           </Button>
@@ -52,7 +52,7 @@ export default function HomeNavbar() {
           {/* Mobile menu */}
           <Sheet>
             <SheetTrigger asChild>
-              <Button size="icon" className="md:hidden">
+              <Button className="md:hidden">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
