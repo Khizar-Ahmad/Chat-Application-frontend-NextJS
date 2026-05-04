@@ -10,17 +10,10 @@ import { useRouter } from "next/navigation";
 
 export default function HomeNavbar() {
 
-      const {setUserInfo}      =useAppContext();
+      const {logOut}      =useAppContext();
       const router = useRouter();
 
-    const logOut = () =>{
-        setUserInfo({name:'',email:'',token:''})
-        localStorage.setItem('token','')
-        localStorage.setItem('email','')
-        localStorage.setItem('name','')
-        router.push('/');
-
-    }
+    
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md px-10">
