@@ -95,7 +95,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const response = await axios.post(
         // "http://127.0.0.1:8000/api/users/signup",
-        `${process.env.base_url}users/signup`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}users/signup`,
         // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/signup",
         payload,
       );
@@ -118,19 +118,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       const response = await axios.post(
         // "http://127.0.0.1:8000/api/users/login",
-        `${process.env.base_url}users/login`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}users/login`,
         // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/login",
         payload,
       );
       const getAllUsers = await axios.get(
         // `http://127.0.0.1:8000/api/users/${response?.data?.user?.id}`,
-        `${process.env.base_url}users/${response?.data?.user?.id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}users/${response?.data?.user?.id}`,
         // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
       );
 
       const resp = await axios.post(
         // `http://127.0.0.1:8000/api/notifications/register-device`,
-        `${process.env.base_url}notifications/register-device`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}notifications/register-device`,
         {
           userId: Number(response?.data?.user?.id),
           device_id: token,
@@ -198,7 +198,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const getAllReceiverDetails = async (receId: any) => {
     const getReceiverInfo = await axios.get(
       // `http://127.0.0.1:8000/api/messages/${userInfo.id}/${receId}`,
-      `${process.env.base_url}messages/${userInfo.id}/${receId}`
+      `${process.env.NEXT_PUBLIC_BASE_URL}messages/${userInfo.id}/${receId}`,
       // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
     );
     let idsOfUnseenMessages: any = [];
@@ -212,7 +212,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const payload = idsOfUnseenMessages;
     const resOfMessagesStatusUpdate = await axios.patch(
       // `http://127.0.0.1:8000/api/messages/unseen`,
-`${process.env.base_url}messages/unseen`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}messages/unseen`,
       payload,
       // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
     );

@@ -89,7 +89,7 @@
 import { getFirebaseMessaging } from "./firebase";
 import { getToken, onMessage } from "firebase/messaging";
 
-const vapidKey = process.env.vapidKey; 
+const vapidKey = process.env.NEXT_PUBLIC_VAPID_KEY;
 
 export const requestNotificationPermission = async (): Promise<
   string | null

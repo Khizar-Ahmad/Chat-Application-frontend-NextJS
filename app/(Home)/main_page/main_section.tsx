@@ -65,7 +65,7 @@ export default function MainSection() {
     } else {
       console.log(email);
       const ws = new WebSocket(
-        `${process.env.websocket_url}ws/${client_id}/${email}`,
+        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}ws/${client_id}/${email}`,
       );
       wsRef.current = ws;
 
