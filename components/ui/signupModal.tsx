@@ -3,6 +3,7 @@ import { useAppContext } from "@/app/context-provider/context_Provider";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { signupSchema } from "@/schemas/signupSchema";
+import { HiMiniXMark } from "react-icons/hi2";
 
 interface SignupFormData {
   name: string;
@@ -11,7 +12,8 @@ interface SignupFormData {
   confirm_password: string;
 }
 export default function SignupModal() {
-  const { signup, login } = useAppContext();
+  const { signup, login, setSigupModalFlag, setLoginModalFlag } =
+    useAppContext();
 
   const {
     register,
@@ -36,7 +38,13 @@ export default function SignupModal() {
       id="signupModal"
       className="fixed inset-0 flex items-center justify-center z-50"
     >
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl slide-up">
+      <div className="relative bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl slide-up no-scrollbar max-h-[95vh] overflow-y-auto border border-gray-300">
+        <HiMiniXMark
+          className="absolute top-10 right-8 cursor-pointer size-6 text-black"
+          onClick={() => {
+            setSigupModalFlag(false);
+          }}
+        />
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold text-gray-800">Create Account</h3>
           <button className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -131,7 +139,13 @@ export default function SignupModal() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Already have an account?
-            <button className="text-purple-600 hover:text-purple-800 transition-colors font-medium">
+            <button
+              className="text-purple-600 hover:text-purple-800 transition-colors font-medium"
+              onClick={() => {
+                setSigupModalFlag(false);
+                setLoginModalFlag(true);
+              }}
+            >
               Sign in
             </button>
           </p>

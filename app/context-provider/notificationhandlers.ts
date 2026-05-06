@@ -96,19 +96,20 @@ export const requestNotificationPermission = async (): Promise<
 > => {
   try {
     // ✅ SSR safety (extra protection)
-    if (typeof window === "undefined") return null;
+    // if (typeof window === "undefined") return null;
 
     // STEP 1 — browser support
     if (!("Notification" in window)) {
       console.error("This browser does not support notifications");
       return null;
     }
-
+    console.log(1);
     // STEP 2 — service worker support
     if (!("serviceWorker" in navigator)) {
       console.error("Service worker not supported in this browser");
       return null;
     }
+    console.log(2);
 
     // STEP 3 — request permission
     const permission = await Notification.requestPermission();
@@ -117,6 +118,7 @@ export const requestNotificationPermission = async (): Promise<
       console.warn("Permission not granted by user");
       return null;
     }
+    console.log(3);
 
     // STEP 4 — get messaging instance (SAFE now)
     const messaging = getFirebaseMessaging();
@@ -124,6 +126,7 @@ export const requestNotificationPermission = async (): Promise<
       console.error("Firebase messaging not available");
       return null;
     }
+    console.log(4);
 
     // STEP 5 — register service worker
     const serviceWorkerRegistration = await navigator.serviceWorker.register(
@@ -140,6 +143,7 @@ export const requestNotificationPermission = async (): Promise<
       console.error("No token returned — check VAPID key and service worker");
       return null;
     }
+    console.log(5);
 
     console.log("FCM Token:", token);
     return token;

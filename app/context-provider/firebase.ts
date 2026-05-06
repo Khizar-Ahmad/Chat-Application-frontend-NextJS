@@ -38,12 +38,12 @@ export function getFirebaseMessaging() {
   if (typeof window === "undefined") return null;
 
   // ✅ prevent multiple firebase apps
-  const app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+  const app =  initializeApp(firebaseConfig);
 
   // ✅ lazy init messaging
-  if (!messagingInstance) {
+  // if (!messagingInstance) {
     messagingInstance = getMessaging(app);
-  }
+  // }
 
   return messagingInstance;
 }

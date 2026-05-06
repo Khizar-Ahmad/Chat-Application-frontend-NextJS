@@ -9,19 +9,18 @@ import { useAppContext } from "../context-provider/context_Provider";
 import { useRouter } from "next/navigation";
 
 export default function HomeNavbar() {
-
-      const {logOut}      =useAppContext();
-      const router = useRouter();
-
-    
+  const { logOut } = useAppContext();
+  const router = useRouter();
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md px-10">
+    <nav className="sticky top-0 z-50 w-full border-b bg-violet-700 text-white backdrop-blur-md px-10">
       <div className="container flex h-16 items-center justify-between">
-        
         {/* Logo */}
-        <Link href="/home" className="flex items-center gap-2 font-bold text-lg">
-          <MessageCircle className="h-6 w-6 text-blue-600" />
+        <Link
+          href="/home"
+          className="flex items-center gap-2 font-bold text-lg"
+        >
+          <MessageCircle className="h-6 w-6 text-white" />
           <span>ChatApp</span>
         </Link>
 
@@ -30,10 +29,16 @@ export default function HomeNavbar() {
           <Link href="/chats" className="hover:text-blue-600 transition-colors">
             Chats
           </Link>
-          <Link href="/contacts" className="hover:text-blue-600 transition-colors">
+          <Link
+            href="/contacts"
+            className="hover:text-blue-600 transition-colors"
+          >
             Contacts
           </Link>
-          <Link href="/settings" className="hover:text-blue-600 transition-colors">
+          <Link
+            href="/settings"
+            className="hover:text-blue-600 transition-colors"
+          >
             Settings
           </Link>
         </div>
@@ -44,7 +49,7 @@ export default function HomeNavbar() {
             <AvatarImage src="/avatars/user.png" alt="User" />
             <AvatarFallback>JD</AvatarFallback>
           </Avatar> */}
-          <Button   className="hidden md:flex gap-1" onClick={logOut}>
+          <Button className="hidden md:flex gap-1" onClick={logOut}>
             <LogOut className="h-4 w-4" />
             Logout
           </Button>
@@ -67,7 +72,7 @@ export default function HomeNavbar() {
                 <Link href="/settings" className="flex items-center gap-2">
                   <Settings className="h-5 w-5" /> Settings
                 </Link>
-                <Button  className="mt-4 flex gap-2">
+                <Button className="mt-4 flex gap-2" onClick={logOut}>
                   <LogOut className="h-5 w-5" /> Logout
                 </Button>
               </nav>

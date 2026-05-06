@@ -127,17 +127,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
         `${process.env.NEXT_PUBLIC_BASE_URL}users/${response?.data?.user?.id}`,
         // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
       );
-
-      const resp = await axios.post(
-        // `http://127.0.0.1:8000/api/notifications/register-device`,
-        `${process.env.NEXT_PUBLIC_BASE_URL}notifications/register-device`,
-        {
-          userId: Number(response?.data?.user?.id),
-          device_id: token,
-          device_type: "web",
-        },
-        // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
-      );
+      if (token) {
+        const resp = await axios.post(
+          // `http://127.0.0.1:8000/api/notifications/register-device`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}notifications/register-device`,
+          {
+            userId: Number(response?.data?.user?.id),
+            device_id: token,
+            device_type: "web",
+          },
+          // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
+        );
+      }
       //  const resp = await fetch(
       //     "http://127.0.0.1:8000/api/notifications/register-device",
       //     {

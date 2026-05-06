@@ -2,22 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-input[type='number'] {
+input[type="number"] {
   -moz-appearance: textfield;
   appearance: textfield;
 }
 
-input[type='number']::-webkit-inner-spin-button {
+input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-input[type='number']::-webkit-outer-spin-button {
+input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
+/* Hide scrollbar but allow scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
 
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE & Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.bgSideBar {
+  /* background-image: linear-gradient(to top, #4481eb 0%, #04befe 100%); */
+  background-image: linear-gradient(to right, #0acffe 0%, #495aff 100%);
+}
+
+.sideBarLeftPortion {
+  background-image: radial-gradient(
+    circle 248px at center,
+    #16d9e3 0%,
+    #30c7ec 47%,
+    #46aef7 100%
+  );
+}
+
+.searchBGImage {
+  background-image: url("./../../public/icons8-search-20.png");
+  background-repeat: no-repeat;
+  background-position: 10px 7px;
+  padding-left: 43px;
+}
 
 @layer base {
   :root {
@@ -74,8 +102,6 @@ input[type='number']::-webkit-outer-spin-button {
     --chart-5: 340 75% 55%;
   }
 }
-
-
 
 @layer base {
   * {

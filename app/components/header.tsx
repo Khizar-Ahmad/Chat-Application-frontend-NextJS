@@ -12,6 +12,7 @@ import { Menu, MessageCircle } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useAppContext } from "../context-provider/context_Provider";
 
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const {
@@ -128,9 +129,9 @@ export default function Navbar() {
         </div>
 
         {/* Mobile menu */}
-        <Sheet>
+        <Sheet open={open} onOpenChange={setOpen}>
           <SheetTrigger asChild>
-            <Button className="md:hidden">
+            <Button className="md:hidden" onClick={() => setOpen(true)}>
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
@@ -139,11 +140,23 @@ export default function Navbar() {
               <Link href="#features">Features</Link>
               <Link href="#pricing">Pricing</Link>
               <Link href="#about">About</Link>
-              <Link href="/login">Login</Link>
+              {/* <Link href="/login">Login</Link> */}
+              <Button
+                className="mt-2"
+                onClick={() => {
+                  // setSigupModalFlag(!sigupModalFlag);
+                  setLoginModalFlag(!loginModalFlag);
+                  setOpen(false)
+                }}
+              >
+                {/* <Link href="/signup">Sign Up</Link> */}
+                Login
+              </Button>
               <Button
                 className="mt-2"
                 onClick={() => {
                   setSigupModalFlag(!sigupModalFlag);
+                  setOpen(false)
                 }}
               >
                 {/* <Link href="/signup">Sign Up</Link> */}

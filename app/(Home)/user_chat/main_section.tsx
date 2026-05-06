@@ -142,11 +142,8 @@ export default function MainSection() {
 
   return (
     <>
-    <div className="flex sm:hidden h-full">
-        <SideBar Type="mobile"/>
-        </div>
-      <div className="max-sm:hidden flex h-full">
-        <SideBar Type="not mobile"/>
+      <div className="flex h-full">
+        {/* <SideBar Type="not mobile"/> */}
 
         <div className="flex-1 flex flex-col">
           {receiverInfo &&
@@ -284,7 +281,7 @@ export default function MainSection() {
                   >
                     <i data-lucide="send" className="w-5 h-5 text-white"></i>
                   </button> */}
-                    <div
+                  <div
                     className="w-7 h-7 mt-1 cursor-pointer duration-700 hover:scale-110"
                     onClick={() => {
                       sendMessage();

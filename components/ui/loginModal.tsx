@@ -3,13 +3,14 @@ import { useAppContext } from "@/app/context-provider/context_Provider";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { loginSchema } from "@/schemas/loginSchema";
+import { HiMiniXMark } from "react-icons/hi2";
 
 interface SignupFormData {
   email: string;
   password: string;
 }
 export default function LoginModal() {
-  const { login } = useAppContext();
+  const { login,setLoginModalFlag,setSigupModalFlag } = useAppContext();
 
   const {
     register,
@@ -30,7 +31,10 @@ export default function LoginModal() {
       id="loginModal"
       className="fixed inset-0 modal-backdrop flex items-center justify-center z-50"
     >
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl slide-up">
+      <div className="relative bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl slide-up">
+      <HiMiniXMark  className="absolute top-10 right-8 cursor-pointer size-6 text-black" onClick={()=>{
+        setLoginModalFlag(false)
+      }}/>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold text-gray-800">Welcome Back</h3>
           <button className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -99,7 +103,10 @@ export default function LoginModal() {
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?
-            <button className="text-purple-600 hover:text-purple-800 transition-colors font-medium">
+            <button className="text-purple-600 hover:text-purple-800 transition-colors font-medium" onClick={()=>{
+              setLoginModalFlag(false)
+              setSigupModalFlag(true)
+            }}>
               Sign up
             </button>
           </p>
