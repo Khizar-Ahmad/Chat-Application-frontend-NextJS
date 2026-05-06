@@ -21,9 +21,10 @@ export default function MainSection() {
     receiverInfo,
     setReceiverInfo,
     setAllUsersMessages,
+    wsRef
   } = useAppContext();
 
-  const wsRef = useRef<WebSocket | null>(null);
+  // const wsRef = useRef<WebSocket | null>(null);
   const receiverInfoRef = useRef<any>("");
   const userInfoRef = useRef<any>("");
 
@@ -64,16 +65,8 @@ export default function MainSection() {
       router.push("/");
     } else {
       console.log(email);
-      const ws = new WebSocket(
-        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}ws/${client_id}/${email}`,
-      );
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        console.log("✅ WebSocket connected");
-      };
-
-      ws.onmessage = (event) => {
+      
+      wsRef.current.onmessage = (event:any) => {
         console.log("📩 Message from server:", event.data);
         const currentUser = userInfoRef.current;
         const currentReceiver = receiverInfoRef.current.userInfo;
@@ -131,12 +124,9 @@ export default function MainSection() {
         }
       };
 
-      ws.onclose = () => console.log("❌ WebSocket closed");
+      wsRef.current.onclose = () => console.log("❌ WebSocket closed");
 
-      return () => {
-        ws.close();
-        wsRef.current = null;
-      };
+      
     }
   }, []);
 

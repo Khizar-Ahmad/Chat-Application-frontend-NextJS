@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useRef,
+  useEffect,
+} from "react";
 import axios from "axios";
 import { useRouter } from "next/navigation";
 import {
@@ -62,6 +69,7 @@ type AppContextType = {
   setReceiverInfo: React.Dispatch<React.SetStateAction<receiverDetails>>;
   allUsersMessages: allUsersDetails;
   setAllUsersMessages: React.Dispatch<React.SetStateAction<allUsersDetails>>;
+  wsRef: any;
   // users: [receiverDetails] | [];
   // setUsers: (val: [receiverDetails] | []) => void;
 };
@@ -72,6 +80,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // const [users, setUsers] = useState<[receiverDetails] | []>([]);
   const [sigupModalFlag, setSigupModalFlag] = useState(false);
   const [loginModalFlag, setLoginModalFlag] = useState(false);
+  const wsRef = useRef<WebSocket | null>(null);
   const [userInfo, setUserInfo] = useState({
     id: 0,
     token: "",
@@ -139,6 +148,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
           // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
         );
       }
+      var client_id = Date.now();
+
+      const ws = new WebSocket(
+        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}ws/${client_id}/${response?.data?.user?.email}`,
+      );
+      wsRef.current = ws;
+
+      wsRef.current.onopen = () => {
+        console.log("✅ WebSocket connected");
+      };
       //  const resp = await fetch(
       //     "http://127.0.0.1:8000/api/notifications/register-device",
       //     {
@@ -193,6 +212,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       data: [],
     });
     setAllUsersMessages({});
+    wsRef?.current?.close();
+    wsRef.current = null;
     router.push("/");
   };
 
@@ -231,6 +252,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     console.log("These are the users: ", getReceiverInfo);
   };
 
+  useEffect(() => {
+    return () => {
+      if (wsRef.current) {
+        wsRef.current.close();
+        wsRef.current = null;
+      }
+    };
+  }, []);
+
   return (
     <AppContext.Provider
       value={{
@@ -248,6 +278,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAllUsersMessages,
         // users,
         // setUsers,
+        wsRef,
         logOut,
         getAllReceiverDetails,
       }}

@@ -12,7 +12,6 @@ import {
   receiverData,
 } from "./../../context-provider/context_Provider";
 export default function MainSection() {
-  var client_id = Date.now();
   const [text, setText] = useState("");
   const router = useRouter();
   const {
@@ -21,9 +20,9 @@ export default function MainSection() {
     receiverInfo,
     setReceiverInfo,
     setAllUsersMessages,
+    wsRef,
   } = useAppContext();
 
-  const wsRef = useRef<WebSocket | null>(null);
   const receiverInfoRef = useRef<any>("");
   const userInfoRef = useRef<any>("");
 
@@ -64,16 +63,8 @@ export default function MainSection() {
       router.push("/");
     } else {
       console.log(email);
-      const ws = new WebSocket(
-        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}ws/${client_id}/${email}`,
-      );
-      wsRef.current = ws;
 
-      ws.onopen = () => {
-        console.log("✅ WebSocket connected");
-      };
-
-      ws.onmessage = (event) => {
+      wsRef.current.onmessage = (event: any) => {
         console.log("📩 Message from server:", event.data);
         const currentUser = userInfoRef.current;
         const currentReceiver = receiverInfoRef.current.userInfo;
@@ -131,22 +122,17 @@ export default function MainSection() {
         }
       };
 
-      ws.onclose = () => console.log("❌ WebSocket closed");
-
-      return () => {
-        ws.close();
-        wsRef.current = null;
-      };
+      wsRef.current.onclose = () => console.log("❌ WebSocket closed");
     }
   }, []);
 
   return (
     <>
-    <div className="flex sm:hidden h-full">
-        <SideBar Type="mobile"/>
-        </div>
+      <div className="flex sm:hidden h-full">
+        <SideBar Type="mobile" />
+      </div>
       <div className="max-sm:hidden flex h-full">
-        <SideBar Type="not mobile"/>
+        <SideBar Type="not mobile" />
 
         <div className="flex-1 flex flex-col">
           {receiverInfo &&
@@ -284,7 +270,7 @@ export default function MainSection() {
                   >
                     <i data-lucide="send" className="w-5 h-5 text-white"></i>
                   </button> */}
-                    <div
+                  <div
                     className="w-7 h-7 mt-1 cursor-pointer duration-700 hover:scale-110"
                     onClick={() => {
                       sendMessage();
