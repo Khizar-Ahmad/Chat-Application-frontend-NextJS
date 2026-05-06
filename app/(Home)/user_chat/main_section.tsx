@@ -58,6 +58,16 @@ export default function MainSection() {
     const token = localStorage.getItem("token");
     const name = localStorage.getItem("name");
     const email = localStorage.getItem("email");
+    var client_id = Date.now();
+    if(!wsRef.current){
+      const ws = new WebSocket(
+        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}ws/${client_id}/${email}`,
+      );
+      wsRef.current = ws;
+       wsRef.current.onopen = () => {
+        console.log("✅ WebSocket connected");
+      };
+      }
 
     console.log(token, email, name);
     if (!token && !name && !email) {
