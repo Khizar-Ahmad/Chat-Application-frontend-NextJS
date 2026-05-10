@@ -6,11 +6,21 @@ import { Hero } from "./main-section-landing-page";
 import { useAppContext } from "../context-provider/context_Provider";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 
 export default function Home() {
   // const [userInfo,updateUserInfo] = useState({token:'',name:'',email:''});
   const router = useRouter();
-  const { userInfo, setUserInfo } = useAppContext();
+  const { userInfo, setUserInfo,setAllUsersMessages } = useAppContext();
+
+  const RetainData = async(user_id:any) =>{
+    const getAllUsers = await axios.get(
+        // `http://127.0.0.1:8000/api/users/${response?.data?.user?.id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}users/${user_id}`,
+        // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
+      );
+      setAllUsersMessages(getAllUsers.data);  
+  }
   useEffect(() => {
     const id = localStorage.getItem("id");
     const token = localStorage.getItem("token");
@@ -19,6 +29,7 @@ export default function Home() {
     console.log(token, email, name);
     if (token && name && email) {
       setUserInfo({ id: Number(id), name, email, token });
+      RetainData(id)
       router.push("/main_page");
     }
   }, []);

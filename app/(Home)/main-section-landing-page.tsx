@@ -3,11 +3,15 @@
 import SignupModal from "@/components/ui/signupModal";
 import LoginModal from "@/components/ui/loginModal";
 
+
+
 import { useState } from "react";
 import { useAppContext } from "../context-provider/context_Provider";
 import SideBar from "@/components/ui/sidebar";
 import { Button } from "../ui/button";
-
+import OTPVerificationModal from "@/components/ui/otpModal";
+import Toast from "@/components/ui/toast";
+import ForgotPasswordModal from "@/components/ui/forget-password-modal";
 interface SignupFormData {
   name: string;
   email: string;
@@ -16,7 +20,18 @@ interface SignupFormData {
 }
 
 export function Hero() {
-  const { sigupModalFlag, loginModalFlag } = useAppContext();
+  const {
+    sigupModalFlag,
+    loginModalFlag,
+    otpModalFlag,
+    setOtpModalFlag,
+    showToast,
+    toastMessage,
+    toastType,
+    setShowToast,
+    forgotPasswordModalFlag,
+    setForgotPasswordModalFlag
+  } = useAppContext();
 
   return (
     <>
@@ -122,6 +137,19 @@ export function Hero() {
 
       {sigupModalFlag && <SignupModal />}
       {loginModalFlag && <LoginModal />}
+      {otpModalFlag&&<OTPVerificationModal/>}
+      <Toast
+        show={showToast}
+        message={toastMessage}
+        type={toastType}
+        onClose={() => setShowToast(false)}
+      />
+      <ForgotPasswordModal forgotPasswordModalFlag={
+    forgotPasswordModalFlag
+  }
+  setForgotPasswordModalFlag={
+    setForgotPasswordModalFlag
+  }/>
     </>
   );
 }

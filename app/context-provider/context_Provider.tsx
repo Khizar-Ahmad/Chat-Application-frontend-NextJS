@@ -70,6 +70,20 @@ type AppContextType = {
   allUsersMessages: allUsersDetails;
   setAllUsersMessages: React.Dispatch<React.SetStateAction<allUsersDetails>>;
   wsRef: any;
+  otpModalFlag: boolean;
+  setOtpModalFlag: React.Dispatch<React.SetStateAction<boolean>>;
+  onVerify: (data: string) => Promise<void>;
+  onResend: () => Promise<void>;
+  showToast: boolean;
+  setShowToast: React.Dispatch<React.SetStateAction<boolean>>;
+  toastMessage: any;
+  setToastMessage: any;
+  toastType: any;
+  setToastType: any;
+  forgotPasswordModalFlag: any;
+  setForgotPasswordModalFlag: any;
+  resetPassword: (data: any) => Promise<void>;
+  forgotPassword: (data: any) => Promise<void>;
   // users: [receiverDetails] | [];
   // setUsers: (val: [receiverDetails] | []) => void;
 };
@@ -81,6 +95,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [sigupModalFlag, setSigupModalFlag] = useState(false);
   const [loginModalFlag, setLoginModalFlag] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const [otpModalFlag, setOtpModalFlag] = useState<boolean>(false);
+  const [showToast, setShowToast] = useState<boolean>(false);
+  const [forgotPasswordModalFlag, setForgotPasswordModalFlag] =
+    useState<boolean>(false);
+
+  const [toastMessage, setToastMessage] = useState<string>("");
+
+  const [toastType, setToastType] = useState<
+    "success" | "error" | "info" | "warning"
+  >("success");
   const [userInfo, setUserInfo] = useState({
     id: 0,
     token: "",
@@ -111,12 +135,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       console.log("✅ Success:", response.data);
       setSigupModalFlag(false);
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Axios error:", error.response?.data || error.message);
-      } else {
-        console.error("Unknown error:", error);
-      }
+      localStorage.setItem("email", response.data.email);
+      setShowToast(true);
+      setToastType("success");
+      setToastMessage(response.data.detail);
+      setOtpModalFlag(true);
+    } catch (error: any) {
+      // if (axios.isAxiosError(error)) {
+      //   console.error("Axios error:", error.response?.data || error.message);
+      // } else {
+      //   console.error("Unknown error:", error);
+      // }
+      console.log(error?.response?.data?.detail?.status);
+      console.log(error?.response?.data?.detail?.message);
+      setShowToast(true);
+      setToastType(error?.response?.data?.detail?.status);
+      setToastMessage(error?.response?.data?.detail?.message);
     }
   };
 
@@ -124,6 +158,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     console.log(payload);
     const token = await requestNotificationPermission();
     console.log(token, " This is the token");
+    let email = payload?.email;
     try {
       const response = await axios.post(
         // "http://127.0.0.1:8000/api/users/login",
@@ -131,6 +166,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/login",
         payload,
       );
+      console.log(response);
+
       const getAllUsers = await axios.get(
         // `http://127.0.0.1:8000/api/users/${response?.data?.user?.id}`,
         `${process.env.NEXT_PUBLIC_BASE_URL}users/${response?.data?.user?.id}`,
@@ -158,25 +195,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       wsRef.current.onopen = () => {
         console.log("✅ WebSocket connected");
       };
-      //  const resp = await fetch(
-      //     "http://127.0.0.1:8000/api/notifications/register-device",
-      //     {
-      //       method: "POST",
-      //       headers: { "Content-Type": "application/json" },
-      //       body: JSON.stringify({
-      //         userId: Number(response?.data?.user?.id),
-      //         device_id: token,
-      //         device_type: "web",
-      //       }),
-      //     }
-      //   );
+
       console.log("✅ Success:", response.data);
       setLoginModalFlag(false);
       console.log("These are the users: ", getAllUsers);
       // setUsers(getAllUsers.data);
       setAllUsersMessages(getAllUsers.data);
       localStorage.setItem("id", response?.data?.user?.id);
-      localStorage.setItem("token", response?.data?.user?.token);
+      localStorage.setItem("token", response?.data?.token);
       localStorage.setItem("email", response?.data?.user?.email);
       localStorage.setItem("name", response?.data?.user?.name);
       setUserInfo({
@@ -185,12 +211,32 @@ export function AppProvider({ children }: { children: ReactNode }) {
         email: response?.data?.user?.email,
         token: response?.data?.token,
       });
+      // if (response?.data?.user?.is_verified) {
+      setShowToast(true);
+      setToastType("success");
+      setToastMessage("Successfully Logged In...");
       router.push("/main_page");
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.error("Axios error:", error.response?.data || error.message);
-      } else {
-        console.error("Unknown error:", error);
+      // } else {
+      // setOtpModalFlag(true);
+      // }
+    } catch (error: any) {
+      // if (axios.isAxiosError(error)) {
+      //   console.log("Axios error:", error.response?.data || error.message);
+      // } else {
+      //   console.log("Unknown error:", error);
+      // }
+      if (error?.response?.status >= 400) {
+        console.log(error?.response?.data?.detail?.status);
+        console.log(error?.response?.data?.detail?.message);
+        setShowToast(true);
+        setToastType(error?.response?.data?.detail?.status);
+        setToastMessage(error?.response?.data?.detail?.message);
+        if (error?.response?.status == 403) {
+          localStorage.setItem("email", email);
+
+          setOtpModalFlag(true);
+          setLoginModalFlag(false);
+        }
       }
     }
   };
@@ -251,6 +297,149 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
     console.log("These are the users: ", getReceiverInfo);
   };
+  const onVerify = async (otp: string) => {
+    const val = localStorage.getItem("email");
+    console.log(otp);
+    const payload = { email: val, otp: otp };
+    try {
+      const response = await axios.post(
+        // "http://127.0.0.1:8000/api/users/login",
+        `${process.env.NEXT_PUBLIC_BASE_URL}users/verify-otp`,
+        // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/login",
+        payload,
+      );
+
+      const getAllUsers = await axios.get(
+        // `http://127.0.0.1:8000/api/users/${response?.data?.user?.id}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}users/${response?.data?.user?.id}`,
+        // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
+      );
+      const token = await requestNotificationPermission();
+      console.log(token, " This is the token");
+      if (token) {
+        const resp = await axios.post(
+          // `http://127.0.0.1:8000/api/notifications/register-device`,
+          `${process.env.NEXT_PUBLIC_BASE_URL}notifications/register-device`,
+          {
+            userId: Number(response?.data?.user?.id),
+            device_id: token,
+            device_type: "web",
+          },
+          // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
+        );
+      }
+      var client_id = Date.now();
+
+      const ws = new WebSocket(
+        `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}ws/${client_id}/${response?.data?.user?.email}`,
+      );
+      wsRef.current = ws;
+
+      wsRef.current.onopen = () => {
+        console.log("✅ WebSocket connected");
+      };
+
+      console.log("✅ Success:", response.data);
+      setLoginModalFlag(false);
+      console.log("These are the users: ", getAllUsers);
+      // setUsers(getAllUsers.data);
+      setAllUsersMessages(getAllUsers.data);
+      localStorage.setItem("id", response?.data?.user?.id);
+      localStorage.setItem("token", response?.data?.token);
+      localStorage.setItem("email", response?.data?.user?.email);
+      localStorage.setItem("name", response?.data?.user?.name);
+      setUserInfo({
+        id: response?.data?.user?.id,
+        name: response?.data?.user?.name,
+        email: response?.data?.user?.email,
+        token: response?.data?.token,
+      });
+      // if (response?.data?.user?.is_verified) {
+      setShowToast(true);
+      setToastType("success");
+      setToastMessage(response?.data?.user?.detail);
+      setOtpModalFlag(false);
+      router.push("/main_page");
+    } catch (error: any) {
+      console.log(error?.response?.data?.detail?.status);
+      console.log(error?.response?.data?.detail?.message);
+      setShowToast(true);
+      setToastType(error?.response?.data?.detail?.status);
+      setToastMessage(error?.response?.data?.detail?.message);
+    }
+  };
+  const onResend = async () => {
+    console.log("Resend OTP");
+    const val = localStorage.getItem("email");
+    const payload = { email: val };
+    try {
+      const response = await axios.post(
+        // "http://127.0.0.1:8000/api/users/login",
+        `${process.env.NEXT_PUBLIC_BASE_URL}users/resend-otp`,
+        // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/login",
+        payload,
+      );
+      setShowToast(true);
+      setToastType(response?.data?.detail?.status);
+      setToastMessage(response?.data?.detail?.message);
+    } catch (error: any) {
+      console.log(error?.response?.data?.detail?.status);
+      console.log(error?.response?.data?.detail?.message);
+      setShowToast(true);
+      setToastType(error?.response?.data?.detail?.status);
+      setToastMessage(error?.response?.data?.detail?.message);
+    }
+  };
+
+  const resetPassword = async (payload: any) => {
+    try {
+      const response = await axios.post(
+        // "http://127.0.0.1:8000/api/users/login",
+        `${process.env.NEXT_PUBLIC_BASE_URL}users/reset-password`,
+        // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/login",
+        payload,
+      );
+      setShowToast(true);
+      setToastType(response?.data?.detail?.status);
+      setToastMessage(response?.data?.detail?.message);
+    } catch (error: any) {
+      console.log(error?.response?.data?.detail?.status);
+      console.log(error?.response?.data?.detail?.message);
+      setShowToast(true);
+      setToastType(error?.response?.data?.detail?.status);
+      setToastMessage(error?.response?.data?.detail?.message);
+    }
+  };
+
+  const forgotPassword = async (payload: any) => {
+    try {
+      const response = await axios.post(
+        // "http://127.0.0.1:8000/api/users/login",
+        `${process.env.NEXT_PUBLIC_BASE_URL}users/forgot-password`,
+        // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/login",
+        payload,
+      );
+      setShowToast(true);
+      setToastType(response?.data?.detail?.status);
+      setToastMessage(response?.data?.detail?.message);
+      setForgotPasswordModalFlag(false);
+    } catch (error: any) {
+      console.log(error?.response?.data?.detail?.status);
+      console.log(error?.response?.data?.detail?.message);
+      setShowToast(true);
+      setToastType(error?.response?.data?.detail?.status);
+      setToastMessage(error?.response?.data?.detail?.message);
+    }
+  };
+  // otpModalFlag={otpModalFlag}
+  // setOtpModalFlag={setOtpModalFlag}
+  // email="khizar@gmail.com"
+  // onVerify={(otp: string) => {
+  //   console.log(otp);
+  // }}
+  // onResend={() => {
+  //   console.log("Resend OTP");
+  // }}
 
   useEffect(() => {
     return () => {
@@ -276,8 +465,22 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setReceiverInfo,
         allUsersMessages,
         setAllUsersMessages,
+        onVerify,
+        onResend,
+        toastType,
+        showToast,
+        forgotPasswordModalFlag,
+        setForgotPasswordModalFlag,
+        toastMessage,
+        setToastType,
+        setShowToast,
+        setToastMessage,
+        resetPassword,
+        forgotPassword,
         // users,
         // setUsers,
+        otpModalFlag,
+        setOtpModalFlag,
         wsRef,
         logOut,
         getAllReceiverDetails,

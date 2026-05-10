@@ -10,7 +10,7 @@ interface SignupFormData {
   password: string;
 }
 export default function LoginModal() {
-  const { login,setLoginModalFlag,setSigupModalFlag } = useAppContext();
+  const { login,setLoginModalFlag,setSigupModalFlag,setForgotPasswordModalFlag } = useAppContext();
 
   const {
     register,
@@ -26,6 +26,10 @@ export default function LoginModal() {
     await login(obj);
   };
 
+  const displayForgotPasswordModal = ( ) =>{
+    setLoginModalFlag(false)
+    setForgotPasswordModalFlag(true)
+  }
   return (
     <div
       id="loginModal"
@@ -87,6 +91,9 @@ export default function LoginModal() {
             <a
               href="#"
               className="text-sm text-purple-600 hover:text-purple-800 transition-colors"
+              onClick={()=>{
+                displayForgotPasswordModal()
+              }}
             >
               Forgot password?
             </a>
