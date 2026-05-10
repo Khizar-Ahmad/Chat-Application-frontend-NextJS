@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LockKeyhole, Eye, EyeOff } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -8,17 +8,23 @@ import { resetPasswordSchema } from "@/schemas/resetPasswordSchema";
 import axios from "axios";
 import { useAppContext } from "../../context-provider/context_Provider";
 import Toast from "@/components/ui/toast";
-import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 
 const ResetPasswordPage = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const searchParams = useSearchParams();
   const router = useRouter();
 
-  const token = searchParams.get("token");
   const { setShowToast, toastType, showToast, toastMessage, resetPassword } =
     useAppContext();
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    const queryToken = new URLSearchParams(window.location.search).get("token");
+
+    setToken(queryToken);
+  }, []);
+
+  console.log(token);
 
   const {
     register,
