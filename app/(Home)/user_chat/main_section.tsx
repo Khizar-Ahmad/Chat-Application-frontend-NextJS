@@ -11,6 +11,7 @@ import {
   receiverDetails,
   receiverData,
 } from "./../../context-provider/context_Provider";
+import { CheckCheck } from "lucide-react";
 export default function MainSection() {
   var client_id = Date.now();
   const [text, setText] = useState("");
@@ -21,13 +22,15 @@ export default function MainSection() {
     receiverInfo,
     setReceiverInfo,
     setAllUsersMessages,
-    wsRef
+    wsRef,
+    lastMessageToAllUsers,
+    setLastMessageToAllUsers,
   } = useAppContext();
 
   // const wsRef = useRef<WebSocket | null>(null);
   const receiverInfoRef = useRef<any>("");
   const userInfoRef = useRef<any>("");
-
+  const lastMessageToAllUsersRef = useRef<any>({});
   console.log("Receiver: ", receiverInfo);
 
   function sendMessage() {
@@ -47,6 +50,10 @@ export default function MainSection() {
   }
 
   useEffect(() => {
+    lastMessageToAllUsersRef.current = lastMessageToAllUsers;
+  }, [lastMessageToAllUsers]);
+
+  useEffect(() => {
     receiverInfoRef.current = receiverInfo;
   }, [receiverInfo]);
 
@@ -59,15 +66,15 @@ export default function MainSection() {
     const name = localStorage.getItem("name");
     const email = localStorage.getItem("email");
     var client_id = Date.now();
-    if(!wsRef.current){
+    if (!wsRef.current) {
       const ws = new WebSocket(
         `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}ws/${client_id}/${email}`,
       );
       wsRef.current = ws;
-       wsRef.current.onopen = () => {
+      wsRef.current.onopen = () => {
         console.log("✅ WebSocket connected");
       };
-      }
+    }
 
     console.log(token, email, name);
     if (!token && !name && !email) {
@@ -75,14 +82,15 @@ export default function MainSection() {
       router.push("/");
     } else {
       console.log(email);
-      
-      wsRef.current.onmessage = (event:any) => {
+
+      wsRef.current.onmessage = (event: any) => {
         console.log("📩 Message from server:", event.data);
         const currentUser = userInfoRef.current;
         const currentReceiver = receiverInfoRef.current.userInfo;
         let newMessage: any = JSON.parse(event.data);
         console.log("Current User: ", currentUser);
         console.log("Current Receiver", currentReceiver);
+        let tempHashmap: any = {};
         if (
           newMessage?.connectionNews == "user_connected" ||
           newMessage?.connectionNews == "user_disconnected"
@@ -99,11 +107,60 @@ export default function MainSection() {
               },
             };
           });
+          if (Number(currentReceiver.id) == Number(newMessage.userId)) {
+            setReceiverInfo((prev: receiverDetails) => ({
+              userInfo: {
+                ...prev.userInfo,
+                connection_status: newMessage?.connection_status,
+              },
+              data: [...prev.data],
+            }));
+          }
+        } else if (
+          Number(currentUser.id) == Number(newMessage.sender) &&
+          newMessage.seen_flag == true
+        ) {
+          setReceiverInfo((prev: any) => {
+            let tempArr = [...prev.data];
+            for (let i = tempArr.length - 1; i >= 0; i--) {
+              if (Number(tempArr[i]["id"]) == Number(newMessage.id)) {
+                tempArr[i]["seen_flag"] = true;
+                break;
+              }
+            }
+            return { userInfo: prev.userInfo, data: tempArr };
+          });
         } else if (Number(currentUser.id) == Number(newMessage.sender)) {
-          setReceiverInfo((prev: receiverDetails) => ({
-            userInfo: prev.userInfo,
-            data: [...prev.data, newMessage],
-          }));
+          // setReceiverInfo((prev: receiverDetails) => ({
+          //   userInfo: prev.userInfo,
+          //   data: [...prev.data, newMessage],
+          // }));
+          // tempHashmap = { ...lastMessageToAllUsersRef.current };
+          // tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
+          // setLastMessageToAllUsers(tempHashmap);
+          if (
+            newMessage.messages_seen == true
+          ) {
+            setReceiverInfo((prev: any) => {
+              let tempArr = [...prev.data];
+              for (let i = tempArr.length - 1; i >= 0; i--) {
+                if (tempArr[i]["seen_flag"] == false) {
+                  tempArr[i]["seen_flag"] = true;
+                } else {
+                  break;
+                }
+              }
+              return { userInfo: prev.userInfo, data: tempArr };
+            });
+          } else {
+            setReceiverInfo((prev: receiverDetails) => ({
+              userInfo: prev.userInfo,
+              data: [...prev.data, newMessage],
+            }));
+            tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
+            tempHashmap[`${currentReceiver.id}`] = newMessage.caption; // ✅ FIXED
+            setLastMessageToAllUsers(tempHashmap);
+          }
         } else {
           // let flag=false
           if (
@@ -115,6 +172,9 @@ export default function MainSection() {
               userInfo: prev.userInfo,
               data: [...prev.data, newMessage],
             }));
+            tempHashmap = { ...lastMessageToAllUsersRef.current };
+            tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
+            setLastMessageToAllUsers(tempHashmap);
             newMessage.changeStatus = true;
             wsRef.current?.send(JSON.stringify(newMessage));
           } else if (Number(currentUser.id) == Number(newMessage.receiver)) {
@@ -130,15 +190,23 @@ export default function MainSection() {
                 },
               };
             });
+            tempHashmap = { ...lastMessageToAllUsersRef.current };
+            tempHashmap[`${newMessage.sender}`] = newMessage.caption;
+            setLastMessageToAllUsers(tempHashmap);
           }
         }
       };
 
       wsRef.current.onclose = () => console.log("❌ WebSocket closed");
-
-      
     }
   }, []);
+
+  function formatTime(timestamp: string) {
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
 
   return (
     <>
@@ -211,7 +279,7 @@ export default function MainSection() {
                           <div className="message-bubble bg-white rounded-lg p-3 shadow-sm">
                             <p className="text-gray-800">{item.caption}</p>
                             <span className="text-xs text-gray-500 mt-1 block">
-                              2:30 PM
+                              {formatTime(item.created_at)}
                             </span>
                           </div>
                         </div>
@@ -219,16 +287,20 @@ export default function MainSection() {
                     }
                     return (
                       <div className="flex items-start space-x-2 mb-4 justify-end">
-                        <div className="message-bubble bg-blue-500 text-white rounded-lg p-3 shadow-sm">
+                        <div className="message-bubble bg-green-300 text-white rounded-lg p-3 shadow-sm">
                           <p>{item.caption}</p>
                           <div className="flex items-center justify-end space-x-1 mt-1">
-                            <span className="text-blue-100 text-xs">
-                              2:31 PM
+                            <span className="text-blue-400 text-xs">
+                              {formatTime(item.created_at)}
                             </span>
-                            <i
-                              data-lucide="check-check"
-                              className="w-3 h-3 text-blue-200"
-                            ></i>
+                            <CheckCheck
+                              size={12}
+                              className={
+                                item.seen_flag
+                                  ? "text-blue-400"
+                                  : "text-gray-400"
+                              }
+                            />
                           </div>
                         </div>
                       </div>

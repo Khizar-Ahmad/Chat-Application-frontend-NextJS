@@ -11,7 +11,7 @@ import axios from "axios";
 export default function Home() {
   // const [userInfo,updateUserInfo] = useState({token:'',name:'',email:''});
   const router = useRouter();
-  const { userInfo, setUserInfo,setAllUsersMessages } = useAppContext();
+  const { userInfo, setUserInfo,setAllUsersMessages,setLastMessageToAllUsers } = useAppContext();
 
   const RetainData = async(user_id:any) =>{
     const getAllUsers = await axios.get(
@@ -19,6 +19,16 @@ export default function Home() {
         `${process.env.NEXT_PUBLIC_BASE_URL}users/${user_id}`,
         // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
       );
+       let lastMessagesHashmap: any = {};
+      if (getAllUsers.data) {
+        Object.entries(getAllUsers.data).forEach(([key, value]: any) => {
+          // console.log(key);
+          // console.log(value);
+          console.log(value);
+          lastMessagesHashmap[`${key}`] = value["message"];
+        });
+      }
+      setLastMessageToAllUsers(lastMessagesHashmap);
       setAllUsersMessages(getAllUsers.data);  
   }
   useEffect(() => {

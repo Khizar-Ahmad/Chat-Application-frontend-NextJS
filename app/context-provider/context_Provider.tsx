@@ -43,6 +43,7 @@ export interface receiverData {
   sender: number;
   receiver: number;
   seen_flag: boolean;
+  created_at: string;
 }
 export interface receiverDetails {
   userInfo: receiver;
@@ -82,6 +83,8 @@ type AppContextType = {
   setToastType: any;
   forgotPasswordModalFlag: any;
   setForgotPasswordModalFlag: any;
+  lastMessageToAllUsers: any;
+  setLastMessageToAllUsers: any;
   resetPassword: (data: any) => Promise<void>;
   forgotPassword: (data: any) => Promise<void>;
   // users: [receiverDetails] | [];
@@ -99,6 +102,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [showToast, setShowToast] = useState<boolean>(false);
   const [forgotPasswordModalFlag, setForgotPasswordModalFlag] =
     useState<boolean>(false);
+  const [lastMessageToAllUsers, setLastMessageToAllUsers] = useState<any>({});
 
   const [toastMessage, setToastMessage] = useState<string>("");
 
@@ -199,7 +203,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       console.log("✅ Success:", response.data);
       setLoginModalFlag(false);
       console.log("These are the users: ", getAllUsers);
+
       // setUsers(getAllUsers.data);
+      let lastMessagesHashmap: any = {};
+      if (getAllUsers.data) {
+        Object.entries(getAllUsers.data).forEach(([key, value]: any) => {
+          // console.log(key);
+          // console.log(value);
+          console.log(value);
+          lastMessagesHashmap[`${key}`] = value["message"];
+        });
+      }
+      setLastMessageToAllUsers(lastMessagesHashmap);
       setAllUsersMessages(getAllUsers.data);
       localStorage.setItem("id", response?.data?.user?.id);
       localStorage.setItem("token", response?.data?.token);
@@ -212,10 +227,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
         token: response?.data?.token,
       });
       // if (response?.data?.user?.is_verified) {
+      setReceiverInfo({
+        userInfo: {
+          id: 0,
+          email: "",
+          name: "",
+          connection_status: "",
+        },
+        data: [],
+      });
       setShowToast(true);
       setToastType("success");
       setToastMessage("Successfully Logged In...");
-      router.push("/main_page");
+      setTimeout(() => {
+           setShowToast(false);
+          setToastMessage("");
+        router.push("/main_page");
+      }, 2000);
       // } else {
       // setOtpModalFlag(true);
       // }
@@ -277,15 +305,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }
     });
     console.log("Ids of Unseen Messages: ", idsOfUnseenMessages);
-    const payload = idsOfUnseenMessages;
-    const resOfMessagesStatusUpdate = await axios.patch(
-      // `http://127.0.0.1:8000/api/messages/unseen`,
-      `${process.env.NEXT_PUBLIC_BASE_URL}messages/unseen`,
-      payload,
-      // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
-    );
+    const senderId = localStorage.getItem("id");
+    if (idsOfUnseenMessages) {
+      const payload = {
+        receiver: senderId, // actually these are messages send by someone else, to you so you become a receiever in this scenerio and the receiver is the sender
+        sender: getReceiverInfo?.data?.userInfo?.id,
+        message_ids: idsOfUnseenMessages,
+      };
+      // const payload = idsOfUnseenMessages;
+      const resOfMessagesStatusUpdate = await axios.patch(
+        // `http://127.0.0.1:8000/api/messages/unseen`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}messages/unseen`,
+        payload,
+        // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
+      );
+    }
+
     console.log("success:", getReceiverInfo.data);
     setReceiverInfo(getReceiverInfo.data);
+    // if (allUsersMessages[receId]&&allUsersMessages[receId]["data"]){
+
+    // }
     setAllUsersMessages((prev: any) => {
       return {
         ...prev,
@@ -343,6 +383,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setLoginModalFlag(false);
       console.log("These are the users: ", getAllUsers);
       // setUsers(getAllUsers.data);
+      setShowToast(true);
+      setToastType("success");
+      setToastMessage(response?.data?.user?.detail);
+      setOtpModalFlag(false);
+      let lastMessagesHashmap: any = {};
+      if (getAllUsers.data) {
+        Object.entries(getAllUsers.data).forEach(([key, value]: any) => {
+          // console.log(key);
+          // console.log(value);
+          lastMessagesHashmap[`${key}`] = value["message"];
+        });
+      }
+      setLastMessageToAllUsers(lastMessagesHashmap);
       setAllUsersMessages(getAllUsers.data);
       localStorage.setItem("id", response?.data?.user?.id);
       localStorage.setItem("token", response?.data?.token);
@@ -355,11 +408,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
         token: response?.data?.token,
       });
       // if (response?.data?.user?.is_verified) {
-      setShowToast(true);
-      setToastType("success");
-      setToastMessage(response?.data?.user?.detail);
-      setOtpModalFlag(false);
       router.push("/main_page");
+      setShowToast(false);
+      setToastMessage("");
     } catch (error: any) {
       console.log(error?.response?.data?.detail?.status);
       console.log(error?.response?.data?.detail?.message);
@@ -477,6 +528,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setToastMessage,
         resetPassword,
         forgotPassword,
+        lastMessageToAllUsers,
+        setLastMessageToAllUsers,
         // users,
         // setUsers,
         otpModalFlag,

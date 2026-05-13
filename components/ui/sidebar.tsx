@@ -126,6 +126,7 @@
 "use client";
 import { useAppContext } from "@/app/context-provider/context_Provider";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 const SideBar = (prop: any) => {
   const {
@@ -134,7 +135,22 @@ const SideBar = (prop: any) => {
     setReceiverInfo,
     userInfo,
     getAllReceiverDetails,
+    lastMessageToAllUsers,
   } = useAppContext();
+
+  useEffect(() => {
+    if (prop.Type == "mobile") {
+      setReceiverInfo({
+        userInfo: {
+          id: 0,
+          email: "",
+          name: "",
+          connection_status: "",
+        },
+        data: [],
+      });
+    }
+  }, []);
 
   const router = useRouter();
   return (
@@ -256,9 +272,9 @@ const SideBar = (prop: any) => {
                       {item?.userInfo?.name}
                     </div>
                     <div className="text-gray-500 text-xs font-serif truncate">
-                      {item?.data?.length > 0
-                        ? item.data[item.data.length - 1]?.caption
-                        : "——————————————"}
+                      {lastMessageToAllUsers[`${userId}`]
+                        ? lastMessageToAllUsers[`${userId}`]
+                        : "Hey there, I am using K-Chat"}
                     </div>
                   </div>
 
