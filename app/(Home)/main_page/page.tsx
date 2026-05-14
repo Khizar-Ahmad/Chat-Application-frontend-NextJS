@@ -7,26 +7,40 @@ import MainSection from "./main_section";
 import axios from "axios";
 import { useEffect } from "react";
 export default function LandingPage() {
-    const { userInfo, setUserInfo,setAllUsersMessages,setLastMessageToAllUsers } = useAppContext();
+  const {
+    userInfo,
+    setUserInfo,
+    setAllUsersMessages,
+    setLastMessageToAllUsers,
+  } = useAppContext();
 
-  const RetainData = async(user_id:any) =>{
+  const RetainData = async (user_id: any) => {
     const getAllUsers = await axios.get(
-        // `http://127.0.0.1:8000/api/users/${response?.data?.user?.id}`,
-        `${process.env.NEXT_PUBLIC_BASE_URL}users/${user_id}`,
-        // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
-      );
-       let lastMessagesHashmap: any = {};
-      if (getAllUsers.data) {
-        Object.entries(getAllUsers.data).forEach(([key, value]: any) => {
-          // console.log(key);
-          // console.log(value);
-          console.log(value);
+      // `http://127.0.0.1:8000/api/users/${response?.data?.user?.id}`,
+      `${process.env.NEXT_PUBLIC_BASE_URL}users/${user_id}`,
+      // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
+    );
+    let lastMessagesHashmap: any = {};
+    if (getAllUsers.data) {
+      Object.entries(getAllUsers.data).forEach(([key, value]: any) => {
+        // console.log(key);
+        // console.log(value);
+        console.log(value);
+        // lastMessagesHashmap[`${key}`] = value["message"];
+        if (value["message"] || value["file_type"] == null) {
           lastMessagesHashmap[`${key}`] = value["message"];
-        });
-      }
-      setLastMessageToAllUsers(lastMessagesHashmap);
-      setAllUsersMessages(getAllUsers.data);  
-  }
+        } else {
+          if (value["file_type"] == "IMAGE") {
+            lastMessagesHashmap[`${key}`] = "Image...";
+          } else {
+            lastMessagesHashmap[`${key}`] = "Video...";
+          }
+        }
+      });
+    }
+    setLastMessageToAllUsers(lastMessagesHashmap);
+    setAllUsersMessages(getAllUsers.data);
+  };
   useEffect(() => {
     const id = localStorage.getItem("id");
     const token = localStorage.getItem("token");
@@ -35,7 +49,7 @@ export default function LandingPage() {
     console.log(token, email, name);
     if (token && name && email) {
       setUserInfo({ id: Number(id), name, email, token });
-      RetainData(id)
+      RetainData(id);
     }
   }, []);
   return (

@@ -211,7 +211,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
           // console.log(key);
           // console.log(value);
           console.log(value);
-          lastMessagesHashmap[`${key}`] = value["message"];
+          // lastMessagesHashmap[`${key}`] = value["message"];
+          if (value["message"] || value["file_type"] == null) {
+            lastMessagesHashmap[`${key}`] = value["message"];
+          } else {
+            if (value["file_type"] == "IMAGE") {
+              lastMessagesHashmap[`${key}`] = "Image...";
+            } else {
+              lastMessagesHashmap[`${key}`] = "Video...";
+            }
+          }
         });
       }
       setLastMessageToAllUsers(lastMessagesHashmap);
@@ -240,8 +249,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setToastType("success");
       setToastMessage("Successfully Logged In...");
       setTimeout(() => {
-           setShowToast(false);
-          setToastMessage("");
+        setShowToast(false);
+        setToastMessage("");
         router.push("/main_page");
       }, 2000);
       // } else {
@@ -392,7 +401,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
         Object.entries(getAllUsers.data).forEach(([key, value]: any) => {
           // console.log(key);
           // console.log(value);
-          lastMessagesHashmap[`${key}`] = value["message"];
+          // lastMessagesHashmap[`${key}`] = value["message"];
+          if (value["message"] || value["file_type"] == null) {
+            lastMessagesHashmap[`${key}`] = value["message"];
+          } else {
+            if (value["file_type"] == "IMAGE") {
+              lastMessagesHashmap[`${key}`] = "Image...";
+            } else {
+              lastMessagesHashmap[`${key}`] = "Video...";
+            }
+          }
         });
       }
       setLastMessageToAllUsers(lastMessagesHashmap);
