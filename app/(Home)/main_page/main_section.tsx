@@ -361,6 +361,7 @@ import {
   receiverDetails,
   receiverData,
 } from "./../../context-provider/context_Provider";
+import axios from "axios";
 export default function MainSection() {
   const [text, setText] = useState("");
   const router = useRouter();
@@ -411,11 +412,17 @@ export default function MainSection() {
     wsRef,
     lastMessageToAllUsers,
     setLastMessageToAllUsers,
+    hasMore,
+    setHasMore,
   } = useAppContext();
 
   const receiverInfoRef = useRef<any>("");
   const userInfoRef = useRef<any>("");
   const lastMessageToAllUsersRef = useRef<any>({}); // ✅ NEW
+
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const [loadingOldMessages, setLoadingOldMessages] = useState(false);
 
   console.log("Receiver: ", receiverInfo);
 
@@ -646,6 +653,93 @@ export default function MainSection() {
     }
   }, []);
 
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+
+    if (!container) return;
+
+    container.scrollTop = container.scrollHeight;
+  }, [receiverInfo?.userInfo?.id]);
+
+  useEffect(() => {
+    const container = messagesContainerRef.current;
+
+    if (!container) return;
+
+    const handleScroll = () => {
+      if (container.scrollTop <= 100 && !loadingOldMessages) {
+        loadOlderMessages();
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, [receiverInfo, loadingOldMessages, hasMore]);
+
+  const loadOlderMessages = async () => {
+    if (loadingOldMessages || !hasMore || !receiverInfo?.data?.length) {
+      return;
+    }
+
+    try {
+      setLoadingOldMessages(true);
+
+      const container = messagesContainerRef.current;
+
+      if (!container) return;
+
+      const previousScrollHeight = container.scrollHeight;
+
+      // const oldestMessage = receiverInfo.data[0];
+
+      // const response = await axios.get(
+      //   `${process.env.NEXT_PUBLIC_BASE_URL}messages/${userInfo.id}/${receiverInfo.userInfo.id}`,
+      //   {
+      //     params: {
+      //       before_created_at: oldestMessage.created_at,
+      //       limit: 30,
+      //     },
+      //   },
+      // );
+      const oldestMessage = receiverInfo.data[0];
+
+      const response = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}messages/${userInfo.id}/${receiverInfo.userInfo.id}`,
+        {
+          params: {
+            before_message_id: oldestMessage.id,
+            limit: 30,
+          },
+        },
+      );
+
+      const olderMessages = response.data.data;
+
+      if (!olderMessages || olderMessages.length === 0) {
+        setHasMore(false);
+        return;
+      }
+
+      setReceiverInfo((prev: any) => ({
+        ...prev,
+        data: [...olderMessages, ...prev.data],
+      }));
+
+      requestAnimationFrame(() => {
+        const newScrollHeight = container.scrollHeight;
+
+        container.scrollTop = newScrollHeight - previousScrollHeight;
+      });
+    } catch (error) {
+      console.log("Error loading old messages", error);
+    } finally {
+      setLoadingOldMessages(false);
+    }
+  };
+
   function formatTime(timestamp: string) {
     return new Date(timestamp).toLocaleTimeString([], {
       hour: "2-digit",
@@ -704,8 +798,19 @@ export default function MainSection() {
                 </div>
               </div>
 
-              <div
+              {/* <div
                 className="flex-1 overflow-y-auto scrollbar-hide chat-pattern p-6"
+                id="messagesContainer"
+              > */}
+              <div
+                ref={messagesContainerRef}
+                className="flex-1
+                  overflow-y-auto
+                  overflow-x-hidden
+                  scrollbar-hide
+                  chat-pattern
+                  p-6
+                "
                 id="messagesContainer"
               >
                 <div className="flex justify-center mb-4">
@@ -716,47 +821,6 @@ export default function MainSection() {
 
                 {receiverInfo && receiverInfo.data.length > 0 ? (
                   receiverInfo?.data?.map((item: any) => {
-                    // if (item.receiver == userInfo.id) {
-                    //   return (
-                    //     <div className="flex items-start space-x-2 mb-4">
-                    //       <div className="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
-                    //         <span className="text-white text-xs font-semibold">
-                    //           {receiverInfo?.userInfo?.name.slice(0, 2)}
-                    //         </span>
-                    //       </div>
-                    //       <div className="message-bubble bg-white rounded-lg p-3 shadow-sm">
-                    //         <p className="text-gray-800">{item.caption}</p>
-                    //         <span className="text-xs text-gray-500 mt-1 block">
-                    //           {formatTime(item.created_at)}
-                    //         </span>
-                    //       </div>
-                    //     </div>
-                    //   );
-                    // }
-                    // return (
-                    //   <div className="flex items-start space-x-2 mb-4 justify-end">
-                    //     <div className="message-bubble bg-green-300 text-black rounded-lg p-3 shadow-sm">
-                    //       <p>{item.caption}</p>
-                    //       <div className="flex items-center justify-end space-x-1 mt-1">
-                    //         <span className="text-blue-400 text-xs">
-                    //           {formatTime(item.created_at)}
-                    //         </span>
-                    //         <CheckCheck
-                    //           size={12}
-                    //           className={
-                    //             item.seen_flag
-                    //               ? "text-blue-400"
-                    //               : "text-gray-400"
-                    //           }
-                    //         />
-                    //         {/* <i
-                    //           data-lucide="check-check"
-                    //           className="w-3 h-3 text-blue-200"
-                    //         ></i> */}
-                    //       </div>
-                    //     </div>
-                    //   </div>
-                    // );
                     const isMine = item.sender === userInfo.id;
 
                     return (
@@ -944,53 +1008,6 @@ export default function MainSection() {
                   </div>
                 </div>
               </div>
-
-              {/* <div className="bg-white px-6 py-4 border-t border-gray-200">
-                <div className="flex items-center space-x-4">
-                  <button
-                    type="button"
-                    className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                  >
-                    <i
-                      data-lucide="paperclip"
-                      className="w-5 h-5 text-gray-500"
-                    ></i>
-                  </button>
-                  <div className="flex-1 relative">
-                    <input
-                      type="text"
-                      id="messageInput"
-                      placeholder="Type a message..."
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-                      value={text}
-                      onChange={(e) => {
-                        setText(e.target.value);
-                      }}
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full transition-colors"
-                    >
-                      <i
-                        data-lucide="smile"
-                        className="w-5 h-5 text-gray-500"
-                      ></i>
-                    </button>
-                  </div>
-                  <div
-                    className="w-7 h-7 mt-1 cursor-pointer duration-700 hover:scale-110"
-                    onClick={() => {
-                      sendMessage();
-                    }}
-                  >
-                    <img
-                      className="w-full h-full"
-                      src="icons8-sent-24.png"
-                      alt=""
-                    />
-                  </div>
-                </div>
-              </div> */}
             </>
           ) : (
             <div className="w-full h-full">

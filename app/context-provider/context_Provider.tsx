@@ -87,6 +87,8 @@ type AppContextType = {
   setLastMessageToAllUsers: any;
   resetPassword: (data: any) => Promise<void>;
   forgotPassword: (data: any) => Promise<void>;
+  hasMore: boolean;
+  setHasMore: (val: boolean) => void;
   // users: [receiverDetails] | [];
   // setUsers: (val: [receiverDetails] | []) => void;
 };
@@ -125,6 +127,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     data: [],
   });
   const [allUsersMessages, setAllUsersMessages] = useState<any>({});
+  const [hasMore, setHasMore] = useState(true);
   const router = useRouter();
 
   const signup = async (payload: SignupPayload) => {
@@ -301,10 +304,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const getAllReceiverDetails = async (receId: any) => {
+    // const getReceiverInfo = await axios.get(
+    //   // `http://127.0.0.1:8000/api/messages/${userInfo.id}/${receId}`,
+    //   `${process.env.NEXT_PUBLIC_BASE_URL}messages/${userInfo.id}/${receId}`,
+    //   // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
+    // );
     const getReceiverInfo = await axios.get(
-      // `http://127.0.0.1:8000/api/messages/${userInfo.id}/${receId}`,
-      `${process.env.NEXT_PUBLIC_BASE_URL}messages/${userInfo.id}/${receId}`,
-      // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
+      `${process.env.NEXT_PUBLIC_BASE_URL}messages/${userInfo.id}/${receId}?limit=30`,
     );
     let idsOfUnseenMessages: any = [];
 
@@ -332,6 +338,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     console.log("success:", getReceiverInfo.data);
     setReceiverInfo(getReceiverInfo.data);
+    setHasMore(getReceiverInfo.data.hasMore);
     // if (allUsersMessages[receId]&&allUsersMessages[receId]["data"]){
 
     // }
@@ -536,6 +543,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAllUsersMessages,
         onVerify,
         onResend,
+        hasMore,
+        setHasMore,
         toastType,
         showToast,
         forgotPasswordModalFlag,
