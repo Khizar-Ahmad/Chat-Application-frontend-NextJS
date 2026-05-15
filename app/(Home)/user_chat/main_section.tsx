@@ -14,6 +14,7 @@ import {
   receiverData,
 } from "./../../context-provider/context_Provider";
 import { CheckCheck, Paperclip } from "lucide-react";
+import EmojiPicker from "emoji-picker-react";
 import axios from "axios";
 export default function MainSection() {
   var client_id = Date.now();
@@ -26,6 +27,7 @@ export default function MainSection() {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     userInfo,
@@ -257,6 +259,13 @@ export default function MainSection() {
             }
             // tempHashmap[`${currentReceiver.id}`] = newMessage.caption; // ✅ FIXED
             setLastMessageToAllUsers(tempHashmap);
+            requestAnimationFrame(() => {
+              const container = messagesContainerRef.current;
+
+              if (container) {
+                container.scrollTop = container.scrollHeight;
+              }
+            });
           }
         } else {
           // let flag=false
@@ -281,6 +290,13 @@ export default function MainSection() {
             }
 
             setLastMessageToAllUsers(tempHashmap);
+            requestAnimationFrame(() => {
+              const container = messagesContainerRef.current;
+
+              if (container) {
+                container.scrollTop = container.scrollHeight;
+              }
+            });
             newMessage.changeStatus = true;
             wsRef.current?.send(JSON.stringify(newMessage));
           } else if (Number(currentUser.id) == Number(newMessage.receiver)) {
@@ -323,105 +339,80 @@ export default function MainSection() {
     }, 100);
   }, []);
 
-
   useEffect(() => {
+    const container = messagesContainerRef.current;
 
-  const container =
-    messagesContainerRef.current;
+    if (!container) return;
 
-  if (!container) return;
+    const handleScroll = () => {
+      // if (container.scrollTop < 100) {
+      //   loadOlderMessages();
+      // }
+      if (container.scrollTop < 100 && !loadingOldMessages && hasMore) {
+        loadOlderMessages();
+      }
+    };
 
-  const handleScroll = () => {
+    container.addEventListener("scroll", handleScroll);
 
-    if (
-      container.scrollTop < 100
-    ) {
-      loadOlderMessages();
-    }
-
-  };
-
-  container.addEventListener(
-    "scroll",
-    handleScroll
-  );
-
-  return () => {
-    container.removeEventListener(
-      "scroll",
-      handleScroll
-    );
-  };
-
-}, [
-  receiverInfo,
-  hasMore,
-  loadingOldMessages
-]);
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+    };
+  }, [receiverInfo, hasMore, loadingOldMessages]);
 
   const loadOlderMessages = async () => {
+    if (!hasMore || loadingOldMessages || !receiverInfo?.data?.length) return;
 
-  if (
-    !hasMore ||
-    loadingOldMessages ||
-    !receiverInfo?.data?.length
-  ) return;
+    setLoadingOldMessages(true);
 
-  setLoadingOldMessages(true);
+    const oldestMessageId = receiverInfo.data[0].id;
 
-  const oldestMessageId =
-    receiverInfo.data[0].id;
+    const container = messagesContainerRef.current;
 
-  const container =
-    messagesContainerRef.current;
+    // const previousHeight = container?.scrollHeight || 0;
+    const previousHeight = container?.scrollHeight || 0;
+    const previousScrollTop = container?.scrollTop || 0;
 
-  const previousHeight =
-    container?.scrollHeight || 0;
+    try {
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_BASE_URL}messages/${userInfo.id}/${receiverInfo.userInfo.id}`,
+        {
+          params: {
+            before_message_id: oldestMessageId,
+            limit: 12,
+          },
+        },
+      );
 
-  try {
+      const olderMessages = res.data.data;
 
-    const res = await axios.get(
-      `${process.env.NEXT_PUBLIC_BASE_URL}messages/${userInfo.id}/${receiverInfo.userInfo.id}`,
-      {
-        params: {
-          before_message_id: oldestMessageId,
-          limit: 30
+      setReceiverInfo((prev: any) => ({
+        ...prev,
+        data: [...olderMessages, ...prev.data],
+      }));
+
+      setHasMore(res.data.hasMore);
+
+      // setTimeout(() => {
+      //   if (container) {
+      //     const newHeight = container.scrollHeight;
+
+      //     container.scrollTop = newHeight - previousHeight;
+      //   }
+      // }, 0);
+      requestAnimationFrame(() => {
+        if (container) {
+          const newHeight = container.scrollHeight;
+
+          const heightDifference = newHeight - previousHeight;
+
+          container.scrollTop = previousScrollTop + heightDifference;
         }
-      }
-    );
-
-    const olderMessages = res.data.data;
-
-    setReceiverInfo((prev: any) => ({
-      ...prev,
-      data: [
-        ...olderMessages,
-        ...prev.data
-      ]
-    }));
-
-    setHasMore(res.data.hasMore);
-
-    setTimeout(() => {
-
-      if (container) {
-
-        const newHeight =
-          container.scrollHeight;
-
-        container.scrollTop =
-          newHeight - previousHeight;
-      }
-
-    }, 0);
-
-  } finally {
-
-    setLoadingOldMessages(false);
-
-  }
-
-};
+      });
+    } finally {
+      setLoadingOldMessages(false);
+    }
+  };
 
   function formatTime(timestamp: string) {
     return new Date(timestamp).toLocaleTimeString([], {
@@ -432,10 +423,11 @@ export default function MainSection() {
 
   return (
     <>
-      <div className="flex h-full">
-        {/* <SideBar Type="not mobile"/> */}
-
-        <div className="flex-1 flex flex-col">
+      {/* <div className="flex h-full"> */}
+      {/* <SideBar Type="not mobile"/> */}
+      <div className="flex h-screen overflow-hidden">
+        {/* <div className="flex-1 flex flex-col"> */}
+        <div className="flex-1 flex flex-col h-full overflow-hidden">
           {receiverInfo &&
           receiverInfo.userInfo &&
           receiverInfo?.userInfo?.email &&
@@ -481,6 +473,7 @@ export default function MainSection() {
               <div
                 ref={messagesContainerRef}
                 className="flex-1 overflow-y-auto scrollbar-hide chat-pattern p-6"
+                // className="flex-1 overflow-y-auto scrollbar-hide chat-pattern p-6 pb-32"
                 id="messagesContainer"
               >
                 <div className="flex justify-center mb-4">
@@ -508,7 +501,7 @@ export default function MainSection() {
 
                         <div
                           className={`message-bubble rounded-lg p-3 shadow-sm max-w-xs
-                ${isMine ? "bg-green-300 text-black" : "bg-white"}`}
+                ${isMine ? "bg-green-300 text-black" : "bg-white text-black"}`}
                         >
                           {/* image */}
                           {item.file && item.file_type === "IMAGE" && (
@@ -564,7 +557,8 @@ export default function MainSection() {
                 )}
               </div>
 
-              <div className="bg-white px-6 py-4 border-t border-gray-200">
+              {/* <div className="bg-white px-6 py-4 border-t border-gray-200"> */}
+              <div className="shrink-0 bg-white px-1 sm:px-6 py-4 border-t border-gray-200">
                 {/* file error */}
                 {fileError && (
                   <div className="text-red-500 text-xs mb-2 px-2">
@@ -617,7 +611,7 @@ export default function MainSection() {
                   </div>
                 )}
 
-                <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-2 relative">
                   {/* hidden file input */}
                   <input
                     ref={fileInputRef}
@@ -639,6 +633,26 @@ export default function MainSection() {
                     {/* <i data-lucide="paperclip" className="w-5 h-5 text-gray-500"></i> */}
                     <Paperclip className="w-5 h-5 text-gray-500" />
                   </button>
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      // className="absolute right-2 top-1/2 -translate-y-1/2"
+                    >
+                      😊
+                    </button>
+
+                    {showEmojiPicker && (
+                      <div className="fixed bottom-12 left-10 z-50">
+                        <EmojiPicker
+                          className="max-w-64"
+                          onEmojiClick={(emojiData) => {
+                            setText((prev) => prev + emojiData.emoji);
+                            setShowEmojiPicker(false);
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
 
                   <div className="flex-1 relative">
                     <input
@@ -646,7 +660,7 @@ export default function MainSection() {
                       placeholder={
                         selectedFile ? "Add a caption..." : "Type a message..."
                       }
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200
+                      className="w-full px-4 py:2 text-sm sm:text-base sm:py-3 bg-gray-50 border border-gray-200
                            rounded-full focus:outline-none focus:ring-2
                            focus:ring-blue-500 focus:bg-white transition-all"
                       value={text}
@@ -663,7 +677,7 @@ export default function MainSection() {
 
                   {/* send button */}
                   <div
-                    className={`w-7 h-7 mt-1 cursor-pointer duration-700 hover:scale-110
+                    className={`w-5 h-5 sm:w-7 sm:h-7 mt-1 cursor-pointer duration-700 hover:scale-110
                        ${isUploading ? "opacity-50 cursor-not-allowed" : ""}`}
                     onClick={() => {
                       if (!isUploading) sendMessage();

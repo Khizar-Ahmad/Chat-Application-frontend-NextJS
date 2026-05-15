@@ -355,6 +355,7 @@ import { useRouter } from "next/navigation";
 import { CheckCheck, Paperclip } from "lucide-react";
 import { validateFile, getFileType } from "@/schemas/fileValidation";
 import { uploadFileWithProgress } from "@/schemas/fileUpload";
+import EmojiPicker from "emoji-picker-react";
 // import { Paperclip } from "lucide-react";
 
 import {
@@ -372,6 +373,7 @@ export default function MainSection() {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -711,7 +713,7 @@ export default function MainSection() {
         {
           params: {
             before_message_id: oldestMessage.id,
-            limit: 30,
+            limit: 15,
           },
         },
       );
@@ -896,7 +898,7 @@ export default function MainSection() {
 
               {/* New lower portion */}
 
-              <div className="bg-white px-6 py-4 border-t border-gray-200">
+              <div className="bg-gray-300 px-6 py-4 border-t border-gray-200">
                 {/* file error */}
                 {fileError && (
                   <div className="text-red-500 text-xs mb-2 px-2">
@@ -970,6 +972,26 @@ export default function MainSection() {
                   >
                     <Paperclip className="w-5 h-5 text-gray-500" />
                   </button>
+
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                      // className="absolute right-2 top-1/2 -translate-y-1/2"
+                    >
+                      😊
+                    </button>
+
+                    {showEmojiPicker && (
+                      <div className="absolute bottom-12 right-0 z-50">
+                        <EmojiPicker
+                          onEmojiClick={(emojiData) => {
+                            setText((prev) => prev + emojiData.emoji);
+                            setShowEmojiPicker(false);
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
 
                   <div className="flex-1 relative">
                     <input

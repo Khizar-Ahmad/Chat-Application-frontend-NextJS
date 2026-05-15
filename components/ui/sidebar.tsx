@@ -245,10 +245,16 @@ const SideBar = (prop: any) => {
                   className="w-full bg-white p-2 flex items-center gap-3 rounded-lg border border-gray-200 cursor-pointer transition-transform duration-300 hover:scale-105"
                   onClick={async () => {
                     if (prop.Type == "mobile") {
-                      await getAllReceiverDetails(item?.userInfo.id);
+                      await getAllReceiverDetails(
+                        item?.userInfo.id,
+                        item.data.length,
+                      );
                       router.push("/user_chat");
                     } else {
-                      await getAllReceiverDetails(item?.userInfo.id);
+                      await getAllReceiverDetails(
+                        item?.userInfo.id,
+                        item.data.length,
+                      );
                     }
                   }}
                 >
