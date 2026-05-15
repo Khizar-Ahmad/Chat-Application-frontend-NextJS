@@ -236,7 +236,7 @@ const SideBar = (prop: any) => {
         </div>
 
         {/* Contact list */}
-        <div className="flex-1 overflow-y-auto scrollbar-hide px-2 py-1 space-y-2">
+        <div className="flex-1 no-scrollbar  overflow-y-auto scrollbar-hide px-2 py-1 space-y-2">
           {allUsersMessages ? (
             Object.entries(allUsersMessages).map(
               ([userId, item]: [string, any]) => (

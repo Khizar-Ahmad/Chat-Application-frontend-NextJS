@@ -1032,8 +1032,8 @@ export default function MainSection() {
               </div>
             </>
           ) : (
-            <div className="w-full h-full">
-              <div className="w-80 h-56 mx-auto mt-[6%]">
+            <div className="w-full h-full text-black">
+              <div className="w-80 max-h-56 mx-auto mt-[6%]">
                 <img
                   className="w-full h-full"
                   src="istockphoto-1399269182-1024x1024.jpg"
