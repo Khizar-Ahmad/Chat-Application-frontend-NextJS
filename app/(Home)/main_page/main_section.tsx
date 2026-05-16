@@ -559,10 +559,12 @@ export default function MainSection() {
         ) {
           setReceiverInfo((prev: any) => {
             let tempArr = [...prev.data];
-            for (let i = tempArr.length - 1; i >= 0; i--) {
-              if (Number(tempArr[i]["id"]) == Number(newMessage.id)) {
-                tempArr[i]["seen_flag"] = true;
-                break;
+            if (Number(prev?.userInfo?.id) == Number(newMessage.receiver)) {
+              for (let i = tempArr.length - 1; i >= 0; i--) {
+                if (Number(tempArr[i]["id"]) == Number(newMessage.id)) {
+                  tempArr[i]["seen_flag"] = true;
+                  break;
+                }
               }
             }
             return { userInfo: prev.userInfo, data: tempArr };
@@ -571,28 +573,36 @@ export default function MainSection() {
           if (newMessage.messages_seen == true) {
             setReceiverInfo((prev: any) => {
               let tempArr = [...prev.data];
-              for (let i = tempArr.length - 1; i >= 0; i--) {
-                if (tempArr[i]["seen_flag"] == false) {
-                  tempArr[i]["seen_flag"] = true;
-                } else {
-                  break;
+              if (Number(prev?.userInfo?.id) == Number(newMessage.receiver)) {
+                for (let i = tempArr.length - 1; i >= 0; i--) {
+                  if (tempArr[i]["seen_flag"] == false) {
+                    tempArr[i]["seen_flag"] = true;
+                  } else {
+                    break;
+                  }
                 }
               }
               return { userInfo: prev.userInfo, data: tempArr };
             });
           } else {
-            setReceiverInfo((prev: receiverDetails) => ({
-              userInfo: prev.userInfo,
-              data: [...prev.data, newMessage],
-            }));
+            setReceiverInfo((prev: receiverDetails) => {
+              if (Number(prev?.userInfo?.id) == Number(newMessage.receiver)) {
+                return {
+                  userInfo: prev.userInfo,
+                  data: [...prev.data, newMessage],
+                };
+              } else {
+                return { userInfo: prev.userInfo, data: [...prev.data] };
+              }
+            });
             tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
             if (newMessage.caption || newMessage.file == null) {
-              tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
+              tempHashmap[`${newMessage.receiver}`] = newMessage.caption;
             } else {
               if (newMessage.file_type == "IMAGE") {
-                tempHashmap[`${currentReceiver.id}`] = "Image...";
+                tempHashmap[`${newMessage.receiver}`] = "Image...";
               } else {
-                tempHashmap[`${currentReceiver.id}`] = "Video...";
+                tempHashmap[`${newMessage.receiver}`] = "Video...";
               }
             }
             // tempHashmap[`${currentReceiver.id}`] = newMessage.caption; // ✅ FIXED
@@ -603,38 +613,52 @@ export default function MainSection() {
             Number(currentReceiver.id) == Number(newMessage.sender) &&
             Number(currentUser.id) == Number(newMessage.receiver)
           ) {
-            newMessage.seen_flag = true;
-            setReceiverInfo((prev: receiverDetails) => ({
-              userInfo: prev.userInfo,
-              data: [...prev.data, newMessage],
-            }));
-            tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
-            if (newMessage.caption || newMessage.file == null) {
-              tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
-            } else {
-              if (newMessage.file_type == "IMAGE") {
-                tempHashmap[`${currentReceiver.id}`] = "Image...";
+            if (!newMessage.seen_flag && !newMessage.messages_seen) {
+              newMessage.seen_flag = true;
+              setReceiverInfo((prev: receiverDetails) => ({
+                userInfo: prev.userInfo,
+                data: [...prev.data, newMessage],
+              }));
+              tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
+              if (newMessage.caption || newMessage.file == null) {
+                tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
               } else {
-                tempHashmap[`${currentReceiver.id}`] = "Video...";
+                if (newMessage.file_type == "IMAGE") {
+                  tempHashmap[`${currentReceiver.id}`] = "Image...";
+                } else {
+                  tempHashmap[`${currentReceiver.id}`] = "Video...";
+                }
               }
+              // tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
+              setLastMessageToAllUsers(tempHashmap);
+              newMessage.changeStatus = true;
+              wsRef.current?.send(JSON.stringify(newMessage));
             }
-            // tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
-            setLastMessageToAllUsers(tempHashmap);
-            newMessage.changeStatus = true;
-            wsRef.current?.send(JSON.stringify(newMessage));
           } else if (Number(currentUser.id) == Number(newMessage.receiver)) {
-            setAllUsersMessages((item: any) => {
-              return {
-                ...item,
-                [Number(newMessage.sender)]: {
-                  ...item[Number(newMessage.sender)],
-                  data: [
-                    ...item[Number(newMessage.sender)]["data"],
-                    newMessage,
-                  ],
-                },
-              };
-            });
+            if (newMessage.seen_flag || newMessage.messages_seen) {
+              setAllUsersMessages((item: any) => {
+                return {
+                  ...item,
+                  [Number(newMessage.sender)]: {
+                    ...item[Number(newMessage.sender)],
+                    data: [],
+                  },
+                };
+              });
+            } else {
+              setAllUsersMessages((item: any) => {
+                return {
+                  ...item,
+                  [Number(newMessage.sender)]: {
+                    ...item[Number(newMessage.sender)],
+                    data: [
+                      ...item[Number(newMessage.sender)]["data"],
+                      newMessage,
+                    ],
+                  },
+                };
+              });
+            }
             tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
             if (newMessage.caption || newMessage.file == null) {
               tempHashmap[`${newMessage.sender}`] = newMessage.caption;

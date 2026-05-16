@@ -180,9 +180,9 @@ export default function MainSection() {
         const currentUser = userInfoRef.current;
         const currentReceiver = receiverInfoRef.current.userInfo;
         let newMessage: any = JSON.parse(event.data);
+        let tempHashmap: any = {};
         console.log("Current User: ", currentUser);
         console.log("Current Receiver", currentReceiver);
-        let tempHashmap: any = {};
         if (
           newMessage?.connectionNews == "user_connected" ||
           newMessage?.connectionNews == "user_disconnected"
@@ -214,105 +214,107 @@ export default function MainSection() {
         ) {
           setReceiverInfo((prev: any) => {
             let tempArr = [...prev.data];
-            for (let i = tempArr.length - 1; i >= 0; i--) {
-              if (Number(tempArr[i]["id"]) == Number(newMessage.id)) {
-                tempArr[i]["seen_flag"] = true;
-                break;
+            if (Number(prev?.userInfo?.id) == Number(newMessage.receiver)) {
+              for (let i = tempArr.length - 1; i >= 0; i--) {
+                if (Number(tempArr[i]["id"]) == Number(newMessage.id)) {
+                  tempArr[i]["seen_flag"] = true;
+                  break;
+                }
               }
             }
             return { userInfo: prev.userInfo, data: tempArr };
           });
         } else if (Number(currentUser.id) == Number(newMessage.sender)) {
-          // setReceiverInfo((prev: receiverDetails) => ({
-          //   userInfo: prev.userInfo,
-          //   data: [...prev.data, newMessage],
-          // }));
-          // tempHashmap = { ...lastMessageToAllUsersRef.current };
-          // tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
-          // setLastMessageToAllUsers(tempHashmap);
           if (newMessage.messages_seen == true) {
             setReceiverInfo((prev: any) => {
               let tempArr = [...prev.data];
-              for (let i = tempArr.length - 1; i >= 0; i--) {
-                if (tempArr[i]["seen_flag"] == false) {
-                  tempArr[i]["seen_flag"] = true;
-                } else {
-                  break;
+              if (Number(prev?.userInfo?.id) == Number(newMessage.receiver)) {
+                for (let i = tempArr.length - 1; i >= 0; i--) {
+                  if (tempArr[i]["seen_flag"] == false) {
+                    tempArr[i]["seen_flag"] = true;
+                  } else {
+                    break;
+                  }
                 }
               }
               return { userInfo: prev.userInfo, data: tempArr };
             });
           } else {
-            setReceiverInfo((prev: receiverDetails) => ({
-              userInfo: prev.userInfo,
-              data: [...prev.data, newMessage],
-            }));
+            setReceiverInfo((prev: receiverDetails) => {
+              if (Number(prev?.userInfo?.id) == Number(newMessage.receiver)) {
+                return {
+                  userInfo: prev.userInfo,
+                  data: [...prev.data, newMessage],
+                };
+              } else {
+                return { userInfo: prev.userInfo, data: [...prev.data] };
+              }
+            });
             tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
             if (newMessage.caption || newMessage.file == null) {
-              tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
+              tempHashmap[`${newMessage.receiver}`] = newMessage.caption;
             } else {
               if (newMessage.file_type == "IMAGE") {
-                tempHashmap[`${currentReceiver.id}`] = "Image...";
+                tempHashmap[`${newMessage.receiver}`] = "Image...";
               } else {
-                tempHashmap[`${currentReceiver.id}`] = "Video...";
+                tempHashmap[`${newMessage.receiver}`] = "Video...";
               }
             }
             // tempHashmap[`${currentReceiver.id}`] = newMessage.caption; // ✅ FIXED
             setLastMessageToAllUsers(tempHashmap);
-            requestAnimationFrame(() => {
-              const container = messagesContainerRef.current;
-
-              if (container) {
-                container.scrollTop = container.scrollHeight;
-              }
-            });
           }
         } else {
-          // let flag=false
           if (
             Number(currentReceiver.id) == Number(newMessage.sender) &&
             Number(currentUser.id) == Number(newMessage.receiver)
           ) {
-            newMessage.seen_flag = true;
-            setReceiverInfo((prev: receiverDetails) => ({
-              userInfo: prev.userInfo,
-              data: [...prev.data, newMessage],
-            }));
-            tempHashmap = { ...lastMessageToAllUsersRef.current };
-            if (newMessage.caption || newMessage.file == null) {
-              tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
-            } else {
-              if (newMessage.file_type == "IMAGE") {
-                tempHashmap[`${currentReceiver.id}`] = "Image...";
+            if (!newMessage.seen_flag && !newMessage.messages_seen) {
+              newMessage.seen_flag = true;
+              setReceiverInfo((prev: receiverDetails) => ({
+                userInfo: prev.userInfo,
+                data: [...prev.data, newMessage],
+              }));
+              tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
+              if (newMessage.caption || newMessage.file == null) {
+                tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
               } else {
-                tempHashmap[`${currentReceiver.id}`] = "Video...";
+                if (newMessage.file_type == "IMAGE") {
+                  tempHashmap[`${currentReceiver.id}`] = "Image...";
+                } else {
+                  tempHashmap[`${currentReceiver.id}`] = "Video...";
+                }
               }
+              // tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
+              setLastMessageToAllUsers(tempHashmap);
+              newMessage.changeStatus = true;
+              wsRef.current?.send(JSON.stringify(newMessage));
             }
-
-            setLastMessageToAllUsers(tempHashmap);
-            requestAnimationFrame(() => {
-              const container = messagesContainerRef.current;
-
-              if (container) {
-                container.scrollTop = container.scrollHeight;
-              }
-            });
-            newMessage.changeStatus = true;
-            wsRef.current?.send(JSON.stringify(newMessage));
           } else if (Number(currentUser.id) == Number(newMessage.receiver)) {
-            setAllUsersMessages((item: any) => {
-              return {
-                ...item,
-                [Number(newMessage.sender)]: {
-                  ...item[Number(newMessage.sender)],
-                  data: [
-                    ...item[Number(newMessage.sender)]["data"],
-                    newMessage,
-                  ],
-                },
-              };
-            });
-            tempHashmap = { ...lastMessageToAllUsersRef.current };
+            if (newMessage.seen_flag || newMessage.messages_seen) {
+              setAllUsersMessages((item: any) => {
+                return {
+                  ...item,
+                  [Number(newMessage.sender)]: {
+                    ...item[Number(newMessage.sender)],
+                    data: [],
+                  },
+                };
+              });
+            } else {
+              setAllUsersMessages((item: any) => {
+                return {
+                  ...item,
+                  [Number(newMessage.sender)]: {
+                    ...item[Number(newMessage.sender)],
+                    data: [
+                      ...item[Number(newMessage.sender)]["data"],
+                      newMessage,
+                    ],
+                  },
+                };
+              });
+            }
+            tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
             if (newMessage.caption || newMessage.file == null) {
               tempHashmap[`${newMessage.sender}`] = newMessage.caption;
             } else {
@@ -322,7 +324,7 @@ export default function MainSection() {
                 tempHashmap[`${newMessage.sender}`] = "Video...";
               }
             }
-
+            // tempHashmap[`${newMessage.sender}`] = newMessage.caption;
             setLastMessageToAllUsers(tempHashmap);
           }
         }
@@ -330,6 +332,182 @@ export default function MainSection() {
 
       wsRef.current.onclose = () => console.log("❌ WebSocket closed");
     }
+    // const token = localStorage.getItem("token");
+    // const name = localStorage.getItem("name");
+    // const email = localStorage.getItem("email");
+    // var client_id = Date.now();
+    // if (!wsRef.current) {
+    //   const ws = new WebSocket(
+    //     `${process.env.NEXT_PUBLIC_WEBSOCKET_URL}ws/${client_id}/${email}`,
+    //   );
+    //   wsRef.current = ws;
+    //   wsRef.current.onopen = () => {
+    //     console.log("✅ WebSocket connected");
+    //   };
+    // }
+
+    // console.log(token, email, name);
+    // if (!token && !name && !email) {
+    //   setUserInfo({ id: 0, name: "", email: "", token: "" });
+    //   router.push("/");
+    // } else {
+    //   console.log(email);
+
+    //   wsRef.current.onmessage = (event: any) => {
+    //     console.log("📩 Message from server:", event.data);
+    //     const currentUser = userInfoRef.current;
+    //     const currentReceiver = receiverInfoRef.current.userInfo;
+    //     let newMessage: any = JSON.parse(event.data);
+    //     console.log("Current User: ", currentUser);
+    //     console.log("Current Receiver", currentReceiver);
+    //     let tempHashmap: any = {};
+    //     if (
+    //       newMessage?.connectionNews == "user_connected" ||
+    //       newMessage?.connectionNews == "user_disconnected"
+    //     ) {
+    //       setAllUsersMessages((item: any) => {
+    //         return {
+    //           ...item,
+    //           [Number(newMessage.userId)]: {
+    //             ...item[Number(newMessage.userId)],
+    //             userInfo: {
+    //               ...item[Number(newMessage.userId)]["userInfo"],
+    //               connection_status: newMessage?.connection_status,
+    //             },
+    //           },
+    //         };
+    //       });
+    //       if (Number(currentReceiver.id) == Number(newMessage.userId)) {
+    //         setReceiverInfo((prev: receiverDetails) => ({
+    //           userInfo: {
+    //             ...prev.userInfo,
+    //             connection_status: newMessage?.connection_status,
+    //           },
+    //           data: [...prev.data],
+    //         }));
+    //       }
+    //     } else if (
+    //       Number(currentUser.id) == Number(newMessage.sender) &&
+    //       newMessage.seen_flag == true
+    //     ) {
+    //       setReceiverInfo((prev: any) => {
+    //         let tempArr = [...prev.data];
+    //         for (let i = tempArr.length - 1; i >= 0; i--) {
+    //           if (Number(tempArr[i]["id"]) == Number(newMessage.id)) {
+    //             tempArr[i]["seen_flag"] = true;
+    //             break;
+    //           }
+    //         }
+    //         return { userInfo: prev.userInfo, data: tempArr };
+    //       });
+    //     } else if (Number(currentUser.id) == Number(newMessage.sender)) {
+    //       // setReceiverInfo((prev: receiverDetails) => ({
+    //       //   userInfo: prev.userInfo,
+    //       //   data: [...prev.data, newMessage],
+    //       // }));
+    //       // tempHashmap = { ...lastMessageToAllUsersRef.current };
+    //       // tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
+    //       // setLastMessageToAllUsers(tempHashmap);
+    //       if (newMessage.messages_seen == true) {
+    //         setReceiverInfo((prev: any) => {
+    //           let tempArr = [...prev.data];
+    //           for (let i = tempArr.length - 1; i >= 0; i--) {
+    //             if (tempArr[i]["seen_flag"] == false) {
+    //               tempArr[i]["seen_flag"] = true;
+    //             } else {
+    //               break;
+    //             }
+    //           }
+    //           return { userInfo: prev.userInfo, data: tempArr };
+    //         });
+    //       } else {
+    //         setReceiverInfo((prev: receiverDetails) => ({
+    //           userInfo: prev.userInfo,
+    //           data: [...prev.data, newMessage],
+    //         }));
+    //         tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
+    //         if (newMessage.caption || newMessage.file == null) {
+    //           tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
+    //         } else {
+    //           if (newMessage.file_type == "IMAGE") {
+    //             tempHashmap[`${currentReceiver.id}`] = "Image...";
+    //           } else {
+    //             tempHashmap[`${currentReceiver.id}`] = "Video...";
+    //           }
+    //         }
+    //         // tempHashmap[`${currentReceiver.id}`] = newMessage.caption; // ✅ FIXED
+    //         setLastMessageToAllUsers(tempHashmap);
+    //         requestAnimationFrame(() => {
+    //           const container = messagesContainerRef.current;
+
+    //           if (container) {
+    //             container.scrollTop = container.scrollHeight;
+    //           }
+    //         });
+    //       }
+    //     } else {
+    //       // let flag=false
+    //       if (
+    //         Number(currentReceiver.id) == Number(newMessage.sender) &&
+    //         Number(currentUser.id) == Number(newMessage.receiver)
+    //       ) {
+    //         newMessage.seen_flag = true;
+    //         setReceiverInfo((prev: receiverDetails) => ({
+    //           userInfo: prev.userInfo,
+    //           data: [...prev.data, newMessage],
+    //         }));
+    //         tempHashmap = { ...lastMessageToAllUsersRef.current };
+    //         if (newMessage.caption || newMessage.file == null) {
+    //           tempHashmap[`${currentReceiver.id}`] = newMessage.caption;
+    //         } else {
+    //           if (newMessage.file_type == "IMAGE") {
+    //             tempHashmap[`${currentReceiver.id}`] = "Image...";
+    //           } else {
+    //             tempHashmap[`${currentReceiver.id}`] = "Video...";
+    //           }
+    //         }
+
+    //         setLastMessageToAllUsers(tempHashmap);
+    //         requestAnimationFrame(() => {
+    //           const container = messagesContainerRef.current;
+
+    //           if (container) {
+    //             container.scrollTop = container.scrollHeight;
+    //           }
+    //         });
+    //         newMessage.changeStatus = true;
+    //         wsRef.current?.send(JSON.stringify(newMessage));
+    //       } else if (Number(currentUser.id) == Number(newMessage.receiver)) {
+    //         setAllUsersMessages((item: any) => {
+    //           return {
+    //             ...item,
+    //             [Number(newMessage.sender)]: {
+    //               ...item[Number(newMessage.sender)],
+    //               data: [
+    //                 ...item[Number(newMessage.sender)]["data"],
+    //                 newMessage,
+    //               ],
+    //             },
+    //           };
+    //         });
+    //         tempHashmap = { ...lastMessageToAllUsersRef.current };
+    //         if (newMessage.caption || newMessage.file == null) {
+    //           tempHashmap[`${newMessage.sender}`] = newMessage.caption;
+    //         } else {
+    //           if (newMessage.file_type == "IMAGE") {
+    //             tempHashmap[`${newMessage.sender}`] = "Image...";
+    //           } else {
+    //             tempHashmap[`${newMessage.sender}`] = "Video...";
+    //           }
+    //         }
+
+    //         setLastMessageToAllUsers(tempHashmap);
+    //       }
+    //     }
+    //   };
+
+    //   wsRef.current.onclose = () => console.log("❌ WebSocket closed");
+    // }
     setTimeout(() => {
       const container = messagesContainerRef.current;
 
