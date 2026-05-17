@@ -883,7 +883,7 @@ export default function MainSection() {
                               src={item.file}
                               alt={item.file_name || "image"}
                               className="rounded-lg max-w-full cursor-pointer mb-1"
-                              style={{ maxWidth: "260px" }}
+                              style={{ maxWidth: "260px", maxHeight: "280px" }}
                               onClick={() => window.open(item.file, "_blank")}
                             />
                           )}
@@ -894,7 +894,7 @@ export default function MainSection() {
                               src={item.file}
                               controls
                               className="rounded-lg max-w-full mb-1"
-                              style={{ maxWidth: "260px" }}
+                              style={{ maxWidth: "260px", maxHeight: "280px" }}
                             />
                           )}
 
