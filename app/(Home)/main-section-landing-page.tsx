@@ -23,6 +23,8 @@ export function Hero() {
   const {
     sigupModalFlag,
     loginModalFlag,
+    setLoginModalFlag,
+    setSigupModalFlag,
     otpModalFlag,
     setOtpModalFlag,
     showToast,
@@ -66,7 +68,9 @@ export function Hero() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               {/* <button onclick="openModal('signupModal')" className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all transform hover:scale-105 shadow-2xl"> */}
-              <button className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all transform hover:scale-105 shadow-2xl">
+              <button className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all transform hover:scale-105 shadow-2xl" onClick={()=>{
+                setSigupModalFlag(true)
+              }}>
                 Get Started Free
               </button>
               <button className="text-white border-2 border-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-purple-600 transition-all">
@@ -128,7 +132,9 @@ export function Hero() {
               Join thousands of teams already using ChatFlow to stay connected.
             </p>
             {/* <button onclick="openModal('signupModal')" className="bg-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-purple-700 transition-all transform hover:scale-105 shadow-xl"> */}
-            <button className="bg-purple-600 text-white px-3 sm:px-8 py-4 rounded-xl font-semibold text-base  sm:text-lg hover:bg-purple-700 transition-all transform hover:scale-105 shadow-xl">
+            <button className="bg-purple-600 text-white px-3 sm:px-8 py-4 rounded-xl font-semibold text-base  sm:text-lg hover:bg-purple-700 transition-all transform hover:scale-105 shadow-xl" onClick={()=>{
+              setSigupModalFlag(true)
+            }}>
               Start Chatting Now
             </button>
           </div>
