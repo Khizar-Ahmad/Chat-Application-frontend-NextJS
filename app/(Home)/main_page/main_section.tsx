@@ -658,19 +658,30 @@ export default function MainSection() {
                   },
                 };
               });
-            }
-            tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
-            if (newMessage.caption || newMessage.file == null) {
-              tempHashmap[`${newMessage.sender}`] = newMessage.caption;
-            } else {
-              if (newMessage.file_type == "IMAGE") {
-                tempHashmap[`${newMessage.sender}`] = "Image...";
+              tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
+              if (newMessage.caption || newMessage.file == null) {
+                tempHashmap[`${newMessage.sender}`] = newMessage.caption;
               } else {
-                tempHashmap[`${newMessage.sender}`] = "Video...";
+                if (newMessage.file_type == "IMAGE") {
+                  tempHashmap[`${newMessage.sender}`] = "Image...";
+                } else {
+                  tempHashmap[`${newMessage.sender}`] = "Video...";
+                }
               }
+              setLastMessageToAllUsers(tempHashmap);
             }
+            // tempHashmap = { ...lastMessageToAllUsersRef.current }; // ✅ FIXED
+            // if (newMessage.caption || newMessage.file == null) {
+            //   tempHashmap[`${newMessage.sender}`] = newMessage.caption;
+            // } else {
+            //   if (newMessage.file_type == "IMAGE") {
+            //     tempHashmap[`${newMessage.sender}`] = "Image...";
+            //   } else {
+            //     tempHashmap[`${newMessage.sender}`] = "Video...";
+            //   }
+            // }
             // tempHashmap[`${newMessage.sender}`] = newMessage.caption;
-            setLastMessageToAllUsers(tempHashmap);
+            // setLastMessageToAllUsers(tempHashmap);
           }
         }
       };
