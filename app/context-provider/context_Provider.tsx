@@ -58,7 +58,7 @@ type AppContextType = {
   //   setUser: (name: string | null) => void;
   signup: (data: SignupPayload) => Promise<void>;
   login: (data: LoginPayload) => Promise<void>;
-  getAllReceiverDetails: (data: any,limit:any) => Promise<void>;
+  getAllReceiverDetails: (data: any, limit: any) => Promise<void>;
   sigupModalFlag: boolean;
   setSigupModalFlag: (val: boolean) => void;
   loginModalFlag: boolean;
@@ -303,16 +303,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     router.push("/");
   };
 
-  const getAllReceiverDetails = async (receId: any,limit:any) => {
+  const getAllReceiverDetails = async (receId: any, limit: any) => {
     // const getReceiverInfo = await axios.get(
     //   // `http://127.0.0.1:8000/api/messages/${userInfo.id}/${receId}`,
     //   `${process.env.NEXT_PUBLIC_BASE_URL}messages/${userInfo.id}/${receId}`,
     //   // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
     // );
-    if(limit<15){
-      limit=15
-    }else{
-    limit+=5
+    if (limit < 15) {
+      limit = 15;
+    } else {
+      limit += 5;
     }
     const getReceiverInfo = await axios.get(
       `${process.env.NEXT_PUBLIC_BASE_URL}messages/${userInfo.id}/${receId}?limit=${limit}`,
@@ -522,14 +522,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   //   console.log("Resend OTP");
   // }}
 
-  useEffect(() => {
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-        wsRef.current = null;
-      }
-    };
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     if (wsRef.current) {
+  //       wsRef.current.close();
+  //       wsRef.current = null;
+  //     }
+  //   };
+  // }, []);
 
   return (
     <AppContext.Provider

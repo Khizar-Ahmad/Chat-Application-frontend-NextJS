@@ -157,6 +157,9 @@ export default function MainSection() {
     const token = localStorage.getItem("token");
     const name = localStorage.getItem("name");
     const email = localStorage.getItem("email");
+    if (!receiverInfo?.userInfo?.email){
+         router.push("/main_page");
+    }
     var client_id = Date.now();
     if (!wsRef.current) {
       const ws = new WebSocket(

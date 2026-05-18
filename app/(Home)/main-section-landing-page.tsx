@@ -3,9 +3,7 @@
 import SignupModal from "@/components/ui/signupModal";
 import LoginModal from "@/components/ui/loginModal";
 
-
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppContext } from "../context-provider/context_Provider";
 import SideBar from "@/components/ui/sidebar";
 import { Button } from "../ui/button";
@@ -32,8 +30,16 @@ export function Hero() {
     toastType,
     setShowToast,
     forgotPasswordModalFlag,
-    setForgotPasswordModalFlag
+    setForgotPasswordModalFlag,
+    wsRef,
   } = useAppContext();
+
+  useEffect(() => {
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+  }, []);
 
   return (
     <>
@@ -68,9 +74,12 @@ export function Hero() {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               {/* <button onclick="openModal('signupModal')" className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all transform hover:scale-105 shadow-2xl"> */}
-              <button className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all transform hover:scale-105 shadow-2xl" onClick={()=>{
-                setSigupModalFlag(true)
-              }}>
+              <button
+                className="bg-white text-purple-600 px-8 py-4 rounded-xl font-semibold text-lg hover:bg-gray-50 transition-all transform hover:scale-105 shadow-2xl"
+                onClick={() => {
+                  setSigupModalFlag(true);
+                }}
+              >
                 Get Started Free
               </button>
               <button className="text-white border-2 border-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white hover:text-purple-600 transition-all">
@@ -132,9 +141,12 @@ export function Hero() {
               Join thousands of teams already using ChatFlow to stay connected.
             </p>
             {/* <button onclick="openModal('signupModal')" className="bg-purple-600 text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-purple-700 transition-all transform hover:scale-105 shadow-xl"> */}
-            <button className="bg-purple-600 text-white px-3 sm:px-8 py-4 rounded-xl font-semibold text-base  sm:text-lg hover:bg-purple-700 transition-all transform hover:scale-105 shadow-xl" onClick={()=>{
-              setSigupModalFlag(true)
-            }}>
+            <button
+              className="bg-purple-600 text-white px-3 sm:px-8 py-4 rounded-xl font-semibold text-base  sm:text-lg hover:bg-purple-700 transition-all transform hover:scale-105 shadow-xl"
+              onClick={() => {
+                setSigupModalFlag(true);
+              }}
+            >
               Start Chatting Now
             </button>
           </div>
@@ -143,19 +155,17 @@ export function Hero() {
 
       {sigupModalFlag && <SignupModal />}
       {loginModalFlag && <LoginModal />}
-      {otpModalFlag&&<OTPVerificationModal/>}
+      {otpModalFlag && <OTPVerificationModal />}
       <Toast
         show={showToast}
         message={toastMessage}
         type={toastType}
         onClose={() => setShowToast(false)}
       />
-      <ForgotPasswordModal forgotPasswordModalFlag={
-    forgotPasswordModalFlag
-  }
-  setForgotPasswordModalFlag={
-    setForgotPasswordModalFlag
-  }/>
+      <ForgotPasswordModal
+        forgotPasswordModalFlag={forgotPasswordModalFlag}
+        setForgotPasswordModalFlag={setForgotPasswordModalFlag}
+      />
     </>
   );
 }
