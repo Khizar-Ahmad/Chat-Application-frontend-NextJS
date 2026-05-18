@@ -494,6 +494,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const forgotPassword = async (payload: any) => {
     try {
+      if (
+        payload.email == "demo1@chatapp.com" ||
+        payload.email == "demo2@chatapp.com"
+      ) {
+        setShowToast(true);
+        setToastType("warning");
+        setToastMessage(
+          `${payload.email}, this account is for demo purpose you can't change it's password`,
+        );
+        return;
+      }
       const response = await axios.post(
         // "http://127.0.0.1:8000/api/users/login",
         `${process.env.NEXT_PUBLIC_BASE_URL}users/forgot-password`,
