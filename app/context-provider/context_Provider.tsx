@@ -181,6 +181,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
       );
       if (token) {
+        try{
         const resp = await axios.post(
           // `http://127.0.0.1:8000/api/notifications/register-device`,
           `${process.env.NEXT_PUBLIC_BASE_URL}notifications/register-device`,
@@ -191,6 +192,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           },
           // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
         );
+        }catch(e){
+            console.log(e)
+        }
       }
       var client_id = Date.now();
 
@@ -378,6 +382,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const token = await requestNotificationPermission();
       console.log(token, " This is the token");
       if (token) {
+        try{
         const resp = await axios.post(
           // `http://127.0.0.1:8000/api/notifications/register-device`,
           `${process.env.NEXT_PUBLIC_BASE_URL}notifications/register-device`,
@@ -388,6 +393,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
           },
           // "https://chat-application-fastapi-postgres-production.up.railway.app/api/users/"
         );
+      }catch(e){
+        console.log(e)
+      }
       }
       var client_id = Date.now();
 
