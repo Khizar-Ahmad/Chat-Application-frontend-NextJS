@@ -875,7 +875,7 @@ export default function MainSection() {
 
                         <div
                           className={`message-bubble rounded-lg p-3 shadow-sm max-w-xs
-                ${isMine ? "bg-green-300 text-black" : "bg-white"}`}
+                ${isMine ? "bg-green-300 text-black" : "bg-white text-black"}`}
                         >
                           {/* image */}
                           {item.file && item.file_type === "IMAGE" && (
