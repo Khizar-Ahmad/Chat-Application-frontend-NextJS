@@ -37,7 +37,7 @@ const DEMOLOGINMODAL = ({handleCloseDemoModal}:any) =>{
           <p className="text-sm mt-2 text-gray-700">
             Email:
             <span className="font-medium ml-1">
-              demo1@chatapp.com
+              demo1@yopmail.com
             </span>
           </p>
 
@@ -57,7 +57,7 @@ const DEMOLOGINMODAL = ({handleCloseDemoModal}:any) =>{
           <p className="text-sm mt-2 text-gray-700">
             Email:
             <span className="font-medium ml-1">
-              demo2@chatapp.com
+              demo2@yopmail.com
             </span>
           </p>
 

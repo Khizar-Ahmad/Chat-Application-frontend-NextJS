@@ -25,9 +25,9 @@ export default function Home() {
   const handleCloseDemoModal = () => {
     setShowDemoModal(false);
 
-    setTimeout(() => {
-      setShowSpamModal(true);
-    }, 300);
+    // setTimeout(() => {
+    //   setShowSpamModal(true);
+    // }, 300);
   };
 
   const RetainData = async (user_id: any) => {
@@ -76,9 +76,9 @@ export default function Home() {
           {showDemoModal && (
             <DEMOLOGINMODAL handleCloseDemoModal={handleCloseDemoModal} />
           )}
-          {showSpamModal && (
+          {/* {showSpamModal && (
             <SPAMINFOMODAL setShowSpamModal={setShowSpamModal} />
-          )}
+          )} */}
         </article>
       </section>
       <footer>
